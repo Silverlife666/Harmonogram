@@ -1,0 +1,150 @@
+{
+  "format": "plan-produkcji-html-v1",
+  "employees": [
+    "Bożena",
+    "Jola",
+    "Judyta",
+    "Julia",
+    "Kamila",
+    "Klaudia",
+    "Maja",
+    "Paulina"
+  ],
+  "assignments": [
+    {
+      "id": "243035af0a3641a692a18bd6a4dff533",
+      "date": "2026-08-24",
+      "shift": "2",
+      "employee": "Judyta",
+      "task": "Kręcenie Rolls",
+      "order": "",
+      "notes": ""
+    },
+    {
+      "id": "9d339a3b6db9462093df80196ee2486c",
+      "date": "2026-08-24",
+      "shift": "1",
+      "employee": "Bożena",
+      "task": "-",
+      "order": "",
+      "notes": "Urlop"
+    },
+    {
+      "id": "7e39b42784e74548a533d1ee95f5a256",
+      "date": "2026-08-24",
+      "shift": "1",
+      "employee": "Jola",
+      "task": "-",
+      "order": "",
+      "notes": "Urlop"
+    },
+    {
+      "id": "c72dd1af71fe4b4d832c5946f23032be",
+      "date": "2026-08-24",
+      "shift": "1",
+      "employee": "Julia",
+      "task": "Klejenie Rolls",
+      "order": "",
+      "notes": "Pierwsze Tipo, potem Ritual"
+    },
+    {
+      "id": "a6983a11a50e49539cbef7cc600b365c",
+      "date": "2026-08-24",
+      "shift": "1",
+      "employee": "Maja",
+      "task": "Klejenie Rolls",
+      "order": "",
+      "notes": "Pierwsze Tipo, potem Ritual"
+    },
+    {
+      "id": "967c79f7a5934c7c86232b487797b63c",
+      "date": "2026-09-21",
+      "shift": "1",
+      "employee": "Bożena",
+      "task": "Kręcenie 14 gsm rolls pink",
+      "order": "",
+      "notes": ""
+    },
+    {
+      "id": "a094049898b04272867c6cbdbcd9994b",
+      "date": "2026-09-21",
+      "shift": "1",
+      "employee": "Jola",
+      "task": "Kręcenie 14 gsm rolls white",
+      "order": "",
+      "notes": ""
+    },
+    {
+      "id": "74ee7552cf494f7287a152b72120fa5a",
+      "date": "2026-09-21",
+      "shift": "1",
+      "employee": "Klaudia",
+      "task": "Bletki Hybryd",
+      "order": "WiseSkies 05/2026",
+      "notes": ""
+    },
+    {
+      "id": "0a4065d5c64f48d687c9fa68ffb54580",
+      "date": "2026-09-21",
+      "shift": "2",
+      "employee": "Judyta",
+      "task": "Kręcenie 14 gsm rolls white",
+      "order": "",
+      "notes": ""
+    },
+    {
+      "id": "83fc1bc28d974854a691a6da79cb2776",
+      "date": "2026-09-21",
+      "shift": "2",
+      "employee": "Julia",
+      "task": "Klejenie Ritual",
+      "order": "",
+      "notes": ""
+    },
+    {
+      "id": "c9c9fa82084c499499ff904754d86c7f",
+      "date": "2026-09-21",
+      "shift": "2",
+      "employee": "Maja",
+      "task": "Klejenie Ritual",
+      "order": "Ritual 03/2026",
+      "notes": ""
+    },
+    {
+      "id": "a37d3e7f842b47cf98379c13180d7149",
+      "date": "2026-09-22",
+      "shift": "1",
+      "employee": "Jola",
+      "task": "Kręcenie 14 gsm rolls white",
+      "order": "",
+      "notes": ""
+    },
+    {
+      "id": "0161637283194325a46473b04dd5471c",
+      "date": "2026-09-23",
+      "shift": "1",
+      "employee": "Jola",
+      "task": "Kręcenie 14 gsm rolls white",
+      "order": "",
+      "notes": ""
+    },
+    {
+      "id": "1a83326d6e204faea5f95a725464f6af",
+      "date": "2026-09-24",
+      "shift": "1",
+      "employee": "Jola",
+      "task": "Kręcenie 14 gsm rolls white",
+      "order": "",
+      "notes": ""
+    },
+    {
+      "id": "8ac8258236e64860a735d57458eef037",
+      "date": "2026-09-25",
+      "shift": "1",
+      "employee": "Jola",
+      "task": "Kręcenie 14 gsm rolls white",
+      "order": "",
+      "notes": ""
+    }
+  ]
+}

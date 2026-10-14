@@ -60,10 +60,7 @@ async function fetchCloudData(showAlert = false) {
         if(!data.lastModified) data.lastModified = "—";
         localStorage.setItem("plan-produkcji-v22", JSON.stringify(data));
         
-        if(data.assignments.length > 0) {
-          let firstDate = new Date(data.assignments[0].date + "T00:00:00");
-          el("week").value = iso(monday(firstDate));
-        }
+        
 
         if(showAlert) alert("Pomyślnie pobrano najnowsze dane z chmury!");
       }

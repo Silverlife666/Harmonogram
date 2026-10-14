@@ -8,11 +8,11 @@
 </style>
 </head>
 <body>
-<header><div><h1>Plan produkcji</h1><p>Harmonogram tygodniowy · Synchronizacja</p></div><button onclick="generatePdf()">⬇ Pobierz PDF</button></header>
+<header><div><h1>Plan produkcji</h1><p>Harmonogram tygodniowy · Synchronizacja w locie · Wersja 1.9.7</p></div><button onclick="generatePdf()">⬇ Pobierz PDF</button></header>
 <main class="layout"><aside class="card sticky controls"><h2>Dane planu</h2>
 <label>Tydzień planowania<input id="week" type="date" onchange="setup()"></label><label class="checkbox"><input id="workSaturday" type="checkbox" onchange="setup()"> Pracująca sobota</label><h3>Pracownicy</h3><div class="employee"><input id="name" placeholder="Imię i nazwisko"><button onclick="addEmployee()">Dodaj</button></div><div id="people" class="chips"></div>
 <h3 id="formTitle">Nowe przypisanie</h3><label>Dzień<select id="day"></select></label><div class="row"><label>Zmiana<select id="shift"><option value="1">Zmiana 1 · 06:00–14:00</option><option value="2">Zmiana 2 · 14:00–22:00</option></select></label><label>Pracownik<select id="employee"></select></label></div><label>Zadanie<input id="task" placeholder="np. Kręcenie Rolls Ritual"></label><label>Zlecenie<input id="order" placeholder="np. ORD-001"></label><label>Uwagi<textarea id="notes"></textarea></label><div class="actions"><button onclick="saveTask()">Zapisz przypisanie</button><button class="secondary" onclick="resetForm()">Wyczyść formularz</button></div>
-<h3>Synchronizacja z npoint</h3><div class="actions"><button onclick="fetchCloudData(true)">🔄 Pobierz z npoint</button><button class="secondary" onclick="copyJsonForNpoint()">📋 Kopiuj JSON do npoint</button><button class="secondary" onclick="exportData()">Eksportuj plik JSON</button><label class="file">Importuj JSON<input type="file" accept="application/json" onchange="importData(event)"></label><button class="danger" onclick="clearData()">Wyczyść plan</button></div><span id="syncStatus" class="sync-status">Status: Gotowy</span></aside>
+<h3>Synchronizacja w locie</h3><div class="actions"><button onclick="fetchCloudData(true)">🔄 Odśwież z chmury</button><button class="secondary" onclick="exportData()">Eksportuj plik JSON</button><label class="file">Importuj JSON<input type="file" accept="application/json" onchange="importData(event)"></label><button class="danger" onclick="clearData()">Wyczyść plan</button></div><span id="syncStatus" class="sync-status">Status: Gotowy</span></aside>
 <section class="card"><div class="toolbar"><div><h2>Harmonogram tygodniowy</h2><p id="period" class="muted"></p><p id="lastChangeInfo" class="muted" style="margin-top:4px; font-weight:bold; color:var(--navy);">Ostatnia zmiana: —</p></div><div class="print-controls"><label>Zakres PDF<select id="printScope" onchange="render()"><option value="week">Cały tydzień</option><option value="day">Jeden dzień</option></select></label><label id="printDayWrap">Dzień do PDF<select id="printDay" onchange="render()"></select></label><label>Filtr zlecenia<input id="filter" placeholder="Wszystkie" oninput="render()"></label></div></div><div id="printHeader"><small>KALKULATOR PRODUKCJI</small><h1 id="printTitle">HARMONOGRAM PRODUKCJI - TYDZIEŃ</h1></div><div class="metrics print-metrics"><div class="metric"><span>OKRES</span><strong id="range">—</strong></div><div class="metric"><span>ZAPLANOWANE ZADANIA</span><strong id="tasks">0</strong></div><div class="metric"><span>GENEROWANO</span><strong id="generated">—</strong></div><div class="metric"><span>PRACOWNICY</span><strong id="count">0</strong></div></div><div id="schedule" class="schedule"></div></section></main>
 <script>
 const API_URL = "https://api.npoint.io/5af347348127549fbd24";
@@ -46,7 +46,7 @@ function updateLastChangeDisplay() {
 }
 
 async function fetchCloudData(showAlert = false) {
-  el("syncStatus").textContent = "Status: Pobieranie z npoint...";
+  el("syncStatus").textContent = "Status: Pobieranie z chmury...";
   try {
     let res = await fetch(API_URL + "?nocache=" + Date.now(), { cache: "no-store" });
     if(res.ok) {
@@ -61,7 +61,7 @@ async function fetchCloudData(showAlert = false) {
           el("week").value = iso(monday(firstDate));
         }
 
-        if(showAlert) alert("Pomyślnie pobrano najnowsze dane z npoint!");
+        if(showAlert) alert("Pomyślnie pobrano najnowsze dane z chmury!");
       }
     }
   } catch(e) {
@@ -82,23 +82,39 @@ async function fetchCloudData(showAlert = false) {
   el("syncStatus").textContent = "Status: Gotowy";
 }
 
-function saveLocal() {
+async function saveCloudData() {
   let now = new Date();
   data.lastModified = String(now.getHours()).padStart(2,"0") + ":" + String(now.getMinutes()).padStart(2,"0") + " (" + String(now.getDate()).padStart(2,"0") + "." + String(now.getMonth()+1).padStart(2,"0") + ")";
+  
   localStorage.setItem("plan-produkcji-sync", JSON.stringify(data));
   updateLastChangeDisplay();
-  el("syncStatus").textContent = "Status: Zapisano lokalnie";
-}
+  el("syncStatus").textContent = "Status: Zapisywanie w chmurze...";
 
-function copyJsonForNpoint() {
-  let jsonString = JSON.stringify(data, null, 2);
-  navigator.clipboard.writeText(jsonString).then(() => {
-    alert("Skopiowano aktualny kod JSON do schowka! Wklej go teraz na npoint.io, aby zaktualizować chmurę.");
-    el("syncStatus").textContent = "Status: Skopiowano JSON do schowka";
-  }).catch(() => {
-    exportData();
-    alert("Nie udało się skopiować automatycznie – pobieram plik JSON na dysk.");
-  });
+  let payload = JSON.stringify(data);
+
+  try {
+    let res = await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: payload
+    });
+    if(res.ok) {
+      el("syncStatus").textContent = "Status: Zapisano w chmurze!";
+    } else {
+      let resPut = await fetch(API_URL, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: payload
+      });
+      if(resPut.ok) {
+        el("syncStatus").textContent = "Status: Zapisano w chmurze!";
+      } else {
+        el("syncStatus").textContent = "Status: Zapisano lokalnie (błąd npoint)";
+      }
+    }
+  } catch(e) {
+    el("syncStatus").textContent = "Status: Zapisano lokalnie (offline)";
+  }
 }
 
 function setup(){
@@ -121,7 +137,7 @@ function addEmployee(){
   let n = el("name").value.trim();
   if(n && !data.employees.some(x => x.toLowerCase() == n.toLowerCase())) data.employees.push(n);
   el("name").value = "";
-  saveLocal();
+  saveCloudData();
   renderPeople();
   render();
 }
@@ -151,7 +167,7 @@ function saveTask(){
     notes: el("notes").value.trim()
   };
   data.assignments = editing ? data.assignments.map(x => x.id == editing ? a : x) : data.assignments.concat(a);
-  saveLocal();
+  saveCloudData();
   resetForm();
   render();
 }
@@ -173,7 +189,7 @@ function editTask(id){
 function removeTask(id){
   if(confirm("Usunąć przypisanie?")){
     data.assignments = data.assignments.filter(x => x.id != id);
-    saveLocal();
+    saveCloudData();
     render();
   }
 }
@@ -222,17 +238,4 @@ function pdfWrap(value,max){let words=pdfAscii(value).split(/\s+/),lines=[],line
 function pdfSource(pages){let count=pages.length,pageIds=[],objs=[];for(let i=0;i<count;i++)pageIds.push(3+i);let font1=3+count,font2=font1+1,contentStart=font2+1;objs[1]="<< /Type /Catalog /Pages 2 0 R >>";objs[2]="<< /Type /Pages /Kids ["+pageIds.map(i=>i+" 0 R").join(" ")+"] /Count "+count+" >>";for(let i=0;i<count;i++)objs[3+i]="<< /Type /Page /Parent 2 0 R /MediaBox [0 0 841.89 595.28] /Resources << /Font << /F1 "+font1+" 0 R /F2 "+font2+" 0 R >> >> /Contents "+(contentStart+i)+" 0 R >>";objs[font1]="<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>";objs[font2]="<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>";pages.forEach((p,i)=>objs[contentStart+i]="<< /Length "+p.length+" >>\nstream\n"+p+"\nendstream");let out="%PDF-1.4\n",offsets=[0];for(let i=1;i<objs.length;i++){offsets[i]=out.length;out+=i+" 0 obj\n"+objs[i]+"\nendobj\n"}let start=out.length;out+="xref\n0 "+objs.length+"\n0000000000 65535 f \n";for(let i=1;i<objs.length;i++)out+=String(offsets[i]).padStart(10,"0")+" 00000 n \n";return out+"trailer\n<< /Size "+objs.length+" /Root 1 0 R >>\nstartxref\n"+start+"\n%%EOF"}
 function generatePdf(){let ds=days(),filter=el("filter").value.trim().toLowerCase(),scope=el("printScope").value,chosen=el("printDay").value,all=data.assignments.filter(a=>ds.some(d=>iso(d)==a.date)&&(!filter||(a.order||"").toLowerCase().includes(filter))),shown=scope=="day"?all.filter(a=>a.date==chosen):all,printedDays=scope=="day"?ds.filter(d=>iso(d)==chosen):ds,title="HARMONOGRAM PRODUKCJI - "+(scope=="day"?"DZIEN":"TYDZIEN"),period=scope=="day"?printedDays[0].toLocaleDateString("pl-PL"):printedDays[0].toLocaleDateString("pl-PL")+" - "+printedDays[printedDays.length-1].toLocaleDateString("pl-PL"),pages=[],commands=[],y=0;
 function rect(x,yy,w,h,r,g,b){commands.push(r+" "+g+" "+b+" rg "+x+" "+yy+" "+w+" "+h+" re f")}function line(x1,y1,x2,y2){commands.push("0.79 0.85 0.91 RG 0.5 w "+x1+" "+y1+" m "+x2+" "+y2+" l S")}function text(x,yy,size,value,bold,color){let c=color||"0.08 0.13 0.21";commands.push(c+" rg BT /"+(bold?"F2":"F1")+" "+size+" Tf "+x+" "+yy+" Td ("+pdfAscii(value)+") Tj ET")}
-function startPage(){commands=[];rect(50,495,742,68,.07,.23,.41);text(66,545,8,"KALKULATOR PRODUKCJI",true,"0.78 0.86 0.94");text(66,517,21,title,true,"1 1 1");text(665,526,10,"HARMONOGRAM",true,"1 1 1");rect(50,442,742,37,.94,.96,.98);text(62,465,7,"OKRES",true,"0.38 0.45 0.55");text(62,450,11,period,true);rect(50,400,110,28,.07,.23,.41);rect(160,400,316,28,.07,.23,.41);rect(476,400,316,28,.07,.23,.41);text(62,410,8,"DZIEN",true,"1 1 1");text(173,410,8,"ZMIANA 1  /  06:00-14:00",true,"1 1 1");text(489,410,8,"ZMIANA 2  /  14:00-22:00",true,"1 1 1");y=400}
-function flush(){commands.push("0.79 0.85 0.91 RG 0.6 w 50 26 m 792 26 l S");text(50,14,7,"Kalkulator produkcji / Harmonogram operacyjny",false,"0.38 0.45 0.55");text(740,14,7,"Strona "+(pages.length+1),false,"0.38 0.45 0.55");pages.push(commands.join("\n"))}
-function cellTasks(list,x,top,width){if(!list.length){text(x+10,top-20,9,"-",false,"0.38 0.45 0.55");return}let cursor=top-16;list.forEach(a=>{let first=pdfWrap(a.employee+" - "+a.task,42);first.forEach(l=>{text(x+10,cursor,8.5,l,l==first[0]);cursor-=10});let detail=(a.order||"bez zlecenia")+(a.notes?" / "+a.notes:"");pdfWrap(detail,48).forEach(l=>{text(x+10,cursor,7.2,l,false,"0.38 0.45 0.55");cursor-=9});cursor-=5})}
-startPage();printedDays.forEach((d,index)=>{let daily=shown.filter(a=>a.date==iso(d)),s1=daily.filter(a=>a.shift=="1"),s2=daily.filter(a=>a.shift=="2"),lines=Math.max(2,s1.length*3,s2.length*3),height=Math.max(48,lines*12+14);if(y-height<42){flush();startPage()}rect(50,y-height,110,height,.88,.93,.98);rect(160,y-height,316,height,.98,.99,1);rect(476,y-height,316,height,.98,.99,1);line(50,y-height,792,y-height);line(160,y-height,160,y);line(476,y-height,476,y);text(62,y-21,11,D[index].toUpperCase(),true);text(62,y-35,8,d.toLocaleDateString("pl-PL"),true);cellTasks(s1,160,y,316);cellTasks(s2,476,y,316);y-=height});flush();let blob=new Blob([pdfSource(pages)],{type:"application/pdf"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=(scope=="day"?"harmonogram_dzien_":"harmonogram_tydzien_")+(scope=="day"?chosen:iso(printedDays[0]))+".pdf";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
-function exportData(){let a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:"application/json"}));a.download="plan_produkcji.json";a.click()}
-function importData(e){let r=new FileReader();r.onload=()=>{try{let x=JSON.parse(r.result);if(!Array.isArray(x.employees)||!Array.isArray(x.assignments))throw 0;data=x;saveLocal();renderPeople();render()}catch(_){alert("Nieprawidłowy plik.")}};if(e.target.files[0])r.readAsText(e.target.files[0])}
-function clearData(){if(confirm("Wyczyścić cały plan?")){data={format:"plan-produkcji-html-v1",employees:[],assignments:[],lastModified:"Wyczyszczono"};saveLocal();renderPeople();render()}}
-
-// Start pobierania
-if(!el("week").value) {
-  el("week").value = iso(monday());
-}
-fetchCloudData();
-</script></body></html>
+function startPage(){commands=[];rect(50,495,742,68,.07,.23,.41);text(66,545,8,"KALKULATOR PRODUKCJI",true,"0.78 0.86 0.94");text(66,51

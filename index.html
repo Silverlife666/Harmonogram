@@ -16,7 +16,7 @@
 <section class="card"><div class="toolbar"><div><h2>Harmonogram tygodniowy</h2><p id="period" class="muted"></p><p id="lastChangeInfo" class="muted" style="margin-top:4px; font-weight:bold; color:var(--navy);">Ostatnia zmiana: —</p></div><div class="print-controls"><label>Zakres PDF<select id="printScope" onchange="render()"><option value="week">Cały tydzień</option><option value="day">Jeden dzień</option></select></label><label id="printDayWrap">Dzień do PDF<select id="printDay" onchange="render()"></select></label><label>Filtr zlecenia<input id="filter" placeholder="Wszystkie" oninput="render()"></label></div></div><div id="printHeader"><small>KALKULATOR PRODUKCJI</small><h1 id="printTitle">HARMONOGRAM PRODUKCJI - TYDZIEŃ</h1></div><div class="metrics print-metrics"><div class="metric"><span>OKRES</span><strong id="range">—</strong></div><div class="metric"><span>ZAPLANOWANE ZADANIA</span><strong id="tasks">0</strong></div><div class="metric"><span>GENEROWANO</span><strong id="generated">—</strong></div><div class="metric"><span>PRACOWNICY</span><strong id="count">0</strong></div></div><div id="schedule" class="schedule"></div></section></main>
 <script>
 // Upewnij się, że wklejasz tutaj ID swojego NOWEGO binu npoint.io
-const API_URL = "https://api.npoint.io/9c330bcf7b22d0830305";
+const API_URL = "https://api.npoint.io/995f8770744c6ed63d0f";
 const D = ["Poniedziałek","Wtorek","Środa","Czwartek","Piątek","Sobota","Niedziela"];
 let data = { format: "plan-produkcji-html-v1", employees: [], assignments: [], lastModified: "—" }, editing="";
 

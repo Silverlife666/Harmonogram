@@ -8,7 +8,7 @@
 </style>
 </head>
 <body>
-<header><div><h1>Plan produkcji</h1><p>Harmonogram tygodniowy · Synchronizacja w locie · Wersja 1.9.7</p></div><button onclick="generatePdf()">⬇ Pobierz PDF</button></header>
+<header><div><h1>Plan produkcji</h1><p>Harmonogram tygodniowy · Synchronizacja w locie · Wersja 1.9.8</p></div><button onclick="generatePdf()">⬇ Pobierz PDF</button></header>
 <main class="layout"><aside class="card sticky controls"><h2>Dane planu</h2>
 <label>Tydzień planowania<input id="week" type="date" onchange="setup()"></label><label class="checkbox"><input id="workSaturday" type="checkbox" onchange="setup()"> Pracująca sobota</label><h3>Pracownicy</h3><div class="employee"><input id="name" placeholder="Imię i nazwisko"><button onclick="addEmployee()">Dodaj</button></div><div id="people" class="chips"></div>
 <h3 id="formTitle">Nowe przypisanie</h3><label>Dzień<select id="day"></select></label><div class="row"><label>Zmiana<select id="shift"><option value="1">Zmiana 1 · 06:00–14:00</option><option value="2">Zmiana 2 · 14:00–22:00</option></select></label><label>Pracownik<select id="employee"></select></label></div><label>Zadanie<input id="task" placeholder="np. Kręcenie Rolls Ritual"></label><label>Zlecenie<input id="order" placeholder="np. ORD-001"></label><label>Uwagi<textarea id="notes"></textarea></label><div class="actions"><button onclick="saveTask()">Zapisz przypisanie</button><button class="secondary" onclick="resetForm()">Wyczyść formularz</button></div>
@@ -48,7 +48,10 @@ function updateLastChangeDisplay() {
 async function fetchCloudData(showAlert = false) {
   el("syncStatus").textContent = "Status: Pobieranie z chmury...";
   try {
-    let res = await fetch(API_URL + "?nocache=" + Date.now(), { cache: "no-store" });
+    let res = await fetch(API_URL + "?nocache=" + Date.now(), { 
+      cache: "no-store",
+      mode: "cors"
+    });
     if(res.ok) {
       let json = await res.json();
       if(json && Array.isArray(json.assignments)) {
@@ -63,6 +66,8 @@ async function fetchCloudData(showAlert = false) {
 
         if(showAlert) alert("Pomyślnie pobrano najnowsze dane z chmury!");
       }
+    } else {
+      throw new Error("Błąd sieci");
     }
   } catch(e) {
     let local = localStorage.getItem("plan-produkcji-sync");
@@ -96,6 +101,7 @@ async function saveCloudData() {
     let res = await fetch(API_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      mode: "cors",
       body: payload
     });
     if(res.ok) {
@@ -104,6 +110,7 @@ async function saveCloudData() {
       let resPut = await fetch(API_URL, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
+        mode: "cors",
         body: payload
       });
       if(resPut.ok) {
@@ -210,32 +217,4 @@ function render(){
   let items = data.assignments.filter(a => validDates.includes(a.date) && (!f || (a.order||"").toLowerCase().includes(f) || (a.task||"").toLowerCase().includes(f)));
   
   let scope = el("printScope").value, selected = el("printDay").value;
-  let forPdf = scope == "day" ? items.filter(a => a.date == selected) : items;
-  let period = scope == "day" ? (ds.find(d => iso(d) == selected) || ds[0]).toLocaleDateString("pl-PL") : (ds[0] ? ds[0].toLocaleDateString("pl-PL") + " – " + ds[ds.length-1].toLocaleDateString("pl-PL") : "—");
-  
-  el("printDayWrap").style.display = scope == "day" ? "block" : "none";
-  el("tasks").textContent = forPdf.length;
-  el("count").textContent = data.employees.length;
-  el("range").textContent = period;
-  el("period").textContent = "Okres: " + period;
-  el("printTitle").textContent = "HARMONOGRAM PRODUKCJI - " + (scope == "day" ? "DZIEŃ" : "TYDZIEŃ");
-  el("generated").textContent = new Date().toLocaleString("pl-PL", {dateStyle:"short", timeStyle:"short"});
-  
-  el("schedule").innerHTML = ds.map((d, i) => {
-    let daily = items.filter(a => a.date == iso(d));
-    let blocks = ["1","2"].map(s => {
-      let t = daily.filter(a => a.shift == s).map(a => 
-        "<div class='task'><b>" + esc(a.employee) + " · " + esc(a.task) + "</b><small>" + esc(a.order || "bez zlecenia") + (a.notes ? " · " + esc(a.notes) : "") + "</small><button class='mini' onclick=\"editTask('" + a.id + "')\">Edytuj</button><button class='mini' onclick=\"removeTask('" + a.id + "')\">Usuń</button></div>"
-      ).join("") || "<div class='empty'>Brak zadań</div>";
-      return "<div class='shift'><h4>ZMIANA " + s + " · " + (s == "1" ? "06:00–14:00" : "14:00–22:00") + "</h4>" + t + "</div>";
-    }).join("");
-    return "<article class='day " + (iso(d) == selected ? "selected-day" : "") + "'><div class='day-name'>" + D[i] + "<small>" + d.toLocaleDateString("pl-PL",{day:"2-digit",month:"2-digit",year:"numeric"}) + "</small></div>" + blocks + "</article>";
-  }).join("");
-}
-
-function pdfAscii(value){let m={"ą":"a","ć":"c","ę":"e","ł":"l","ń":"n","ó":"o","ś":"s","ź":"z","ż":"z","Ą":"A","Ć":"C","Ę":"E","Ł":"L","Ń":"N","Ó":"O","Ś":"S","Ź":"Z","Ż":"Z","–":"-","—":"-","·":" / "};return String(value||"").replace(/[ąćęłńóśźżĄĆĘŁŃÓŚŹŻ–—·]/g,c=>m[c]||c).replace(/[\(\)\\]/g,c=>"\\"+c)}
-function pdfWrap(value,max){let words=pdfAscii(value).split(/\s+/),lines=[],line="";words.forEach(w=>{let next=line?(line+" "+w):w;if(next.length>max&&line){lines.push(line);line=w}else line=next});if(line)lines.push(line);return lines}
-function pdfSource(pages){let count=pages.length,pageIds=[],objs=[];for(let i=0;i<count;i++)pageIds.push(3+i);let font1=3+count,font2=font1+1,contentStart=font2+1;objs[1]="<< /Type /Catalog /Pages 2 0 R >>";objs[2]="<< /Type /Pages /Kids ["+pageIds.map(i=>i+" 0 R").join(" ")+"] /Count "+count+" >>";for(let i=0;i<count;i++)objs[3+i]="<< /Type /Page /Parent 2 0 R /MediaBox [0 0 841.89 595.28] /Resources << /Font << /F1 "+font1+" 0 R /F2 "+font2+" 0 R >> >> /Contents "+(contentStart+i)+" 0 R >>";objs[font1]="<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>";objs[font2]="<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>";pages.forEach((p,i)=>objs[contentStart+i]="<< /Length "+p.length+" >>\nstream\n"+p+"\nendstream");let out="%PDF-1.4\n",offsets=[0];for(let i=1;i<objs.length;i++){offsets[i]=out.length;out+=i+" 0 obj\n"+objs[i]+"\nendobj\n"}let start=out.length;out+="xref\n0 "+objs.length+"\n0000000000 65535 f \n";for(let i=1;i<objs.length;i++)out+=String(offsets[i]).padStart(10,"0")+" 00000 n \n";return out+"trailer\n<< /Size "+objs.length+" /Root 1 0 R >>\nstartxref\n"+start+"\n%%EOF"}
-function generatePdf(){let ds=days(),filter=el("filter").value.trim().toLowerCase(),scope=el("printScope").value,chosen=el("printDay").value,all=data.assignments.filter(a=>ds.some(d=>iso(d)==a.date)&&(!filter||(a.order||"").toLowerCase().includes(filter))),shown=scope=="day"?all.filter(a=>a.date==chosen):all,printedDays=scope=="day"?ds.filter(d=>iso(d)==chosen):ds,title="HARMONOGRAM PRODUKCJI - "+(scope=="day"?"DZIEN":"TYDZIEN"),period=scope=="day"?printedDays[0].toLocaleDateString("pl-PL"):printedDays[0].toLocaleDateString("pl-PL")+" - "+printedDays[printedDays.length-1].toLocaleDateString("pl-PL"),pages=[],commands=[],y=0;
-function rect(x,yy,w,h,r,g,b){commands.push(r+" "+g+" "+b+" rg "+x+" "+yy+" "+w+" "+h+" re f")}function line(x1,y1,x2,y2){commands.push("0.79 0.85 0.91 RG 0.5 w "+x1+" "+y1+" m "+x2+" "+y2+" l S")}function text(x,yy,size,value,bold,color){let c=color||"0.08 0.13 0.21";commands.push(c+" rg BT /"+(bold?"F2":"F1")+" "+size+" Tf "+x+" "+yy+" Td ("+pdfAscii(value)+") Tj ET")}
-function startPage(){commands=[];rect(50,495,742,68,.07,.23,.41);text(66,545,8,"KALKULATOR PRODUKCJI",true,"0.78 0.86 0.94");text(66,51
+  let forPdf = scope == "day" ? items.filter

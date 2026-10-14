@@ -2,31 +2,221 @@
 <html lang="pl">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Plan produkcji offline</title>
+<title>Plan produkcji</title>
 <style>
-:root{--navy:#123b69;--ink:#152238;--pale:#eef4fb;--line:#cbd8e6;--green:#16825d}*{box-sizing:border-box}body{margin:0;background:#eef3f8;color:var(--ink);font:16px Inter,Segoe UI,Arial,sans-serif}header{background:var(--navy);color:#fff;padding:22px max(24px,calc((100vw - 1400px)/2));display:flex;justify-content:space-between;align-items:center;gap:16px}h1{margin:0;font-size:1.5rem}header p{margin:4px 0 0;color:#c9d9eb;font-size:.88rem}.layout{max-width:1400px;margin:auto;padding:26px 24px;display:grid;grid-template-columns:330px 1fr;gap:24px}.card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:20px;box-shadow:0 6px 20px #17395b12}.sticky{position:sticky;top:16px;align-self:start}h2{font-size:1.1rem;margin:0 0 14px}h3{font-size:.8rem;letter-spacing:.08em;color:#61748a;margin:22px 0 8px}label{display:block;margin:10px 0 5px;font-size:.75rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase}input,select,textarea{width:100%;padding:10px;border:1px solid #b8c6d7;border-radius:7px;font:inherit}textarea{height:58px}.checkbox{display:flex;align-items:center;gap:8px;text-transform:none;font-size:.88rem;letter-spacing:0;color:var(--ink);cursor:pointer}.checkbox input{width:18px;height:18px;padding:0;margin:0;accent-color:var(--navy)}.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}button,.file{border:0;border-radius:7px;padding:10px 12px;background:var(--navy);color:#fff;font-weight:800;cursor:pointer;text-align:center}.secondary{background:#e5edf7;color:#123b69}.danger{background:#ae3d3d}.actions{display:grid;gap:8px;margin-top:15px}.file input{display:none}.employee{display:flex;gap:7px}.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}.chip{background:var(--pale);border:1px solid var(--line);border-radius:15px;padding:4px 8px;font-size:.8rem}.toolbar{display:flex;justify-content:space-between;align-items:end;gap:16px}.toolbar input{width:190px}.print-controls{display:flex;gap:8px;align-items:end}.print-controls select{min-width:145px}.muted{color:#64748b;font-size:.85rem}.metrics{display:flex;gap:12px;margin:15px 0;flex-wrap:wrap}.metric{border:1px solid var(--line);background:var(--pale);border-radius:7px;padding:8px 12px;min-width:125px}.metric span{display:block;font-size:.68rem;font-weight:800;color:#60738a}.metric strong{font-size:1.2rem}.schedule{border:1px solid var(--line);border-radius:9px;overflow:hidden}.day{display:grid;grid-template-columns:132px 1fr 1fr;border-bottom:1px solid var(--line);min-height:100px}.day:last-child{border:0}.day-name{padding:15px;background:#e3eef9;font-weight:900}.day-name small{display:block;margin-top:4px;color:#60738a}.shift{padding:11px;border-left:1px solid var(--line)}.shift h4{margin:0 0 8px;color:#49637e;font-size:.7rem;letter-spacing:.06em}.task{border-left:4px solid var(--green);background:#f3faf7;padding:7px 8px;margin:6px 0;border-radius:3px;font-size:.86rem}.task b,.task small{display:block}.task small,.empty{color:#65778d;font-size:.78rem;margin-top:3px}.mini{font-size:.7rem;padding:3px 7px;margin:6px 4px 0 0;background:#dce8f3;color:#123b69}#printHeader{display:none}@media(max-width:900px){.layout{grid-template-columns:1fr}.sticky{position:static}.day{grid-template-columns:1fr}.shift{border-left:0;border-top:1px solid var(--line)}}@media print{@page{size:A4 landscape;margin:9mm}body{background:#fff;font-size:10pt}header,.controls,.toolbar,.task button{display:none}.layout{display:block;padding:0}.card{border:0;box-shadow:none;padding:0}#printHeader{display:block;background:var(--navy);color:white;padding:10mm 12mm 7mm;margin:0 0 4mm}#printHeader small{display:block;color:#c8d9ed;font-weight:800;letter-spacing:.08em}#printHeader h1{font-size:22pt;margin:2mm 0 0}.print-metrics{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;background:#f1f5f9;border:1px solid var(--line);padding:4mm 5mm;margin-bottom:5mm}.print-metrics span{display:block;font-size:7pt;font-weight:800;color:#64748b}.print-metrics strong{font-size:11pt}.day{grid-template-columns:34mm 1fr 1fr;min-height:23mm}.day-name{padding:4mm}.shift{padding:3mm}.task{padding:2mm;margin:1mm 0}.print-day .day:not(.selected-day){display:none}}
+:root{--navy:#123b69;--ink:#152238;--pale:#eef4fb;--line:#cbd8e6;--green:#16825d}*{box-sizing:border-box}body{margin:0;background:#eef3f8;color:var(--ink);font:16px Inter,Segoe UI,Arial,sans-serif}header{background:var(--navy);color:#fff;padding:22px max(24px,calc((100vw - 1400px)/2));display:flex;justify-content:space-between;align-items:center;gap:16px}h1{margin:0;font-size:1.5rem}header p{margin:4px 0 0;color:#c9d9eb;font-size:.88rem}.layout{max-width:1400px;margin:auto;padding:26px 24px;display:grid;grid-template-columns:330px 1fr;gap:24px}.card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:20px;box-shadow:0 6px 20px #17395b12}.sticky{position:sticky;top:16px;align-self:start}h2{font-size:1.1rem;margin:0 0 14px}h3{font-size:.8rem;letter-spacing:.08em;color:#61748a;margin:22px 0 8px}label{display:block;margin:10px 0 5px;font-size:.75rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase}input,select,textarea{width:100%;padding:10px;border:1px solid #b8c6d7;border-radius:7px;font:inherit}textarea{height:58px}.checkbox{display:flex;align-items:center;gap:8px;text-transform:none;font-size:.88rem;letter-spacing:0;color:var(--ink);cursor:pointer}.checkbox input{width:18px;height:18px;padding:0;margin:0;accent-color:var(--navy)}.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}button,.file{border:0;border-radius:7px;padding:10px 12px;background:var(--navy);color:#fff;font-weight:800;cursor:pointer;text-align:center;display:block;width:100%}.secondary{background:#e5edf7;color:#123b69}.danger{background:#ae3d3d}.actions{display:grid;gap:8px;margin-top:15px}.file input{display:none}.employee{display:flex;gap:7px}.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}.chip{background:var(--pale);border:1px solid var(--line);border-radius:15px;padding:4px 8px;font-size:.8rem}.toolbar{display:flex;justify-content:space-between;align-items:end;gap:16px}.toolbar input{width:190px}.print-controls{display:flex;gap:8px;align-items:end}.print-controls select{min-width:145px}.muted{color:#64748b;font-size:.85rem}.sync-status{font-size:0.75rem;padding:6px;border-radius:4px;background:#eef4fb;color:var(--navy);font-weight:bold;display:block;margin-top:8px;text-align:center;}.metrics{display:flex;gap:12px;margin:15px 0;flex-wrap:wrap}.metric{border:1px solid var(--line);background:var(--pale);border-radius:7px;padding:8px 12px;min-width:125px}.metric span{display:block;font-size:.68rem;font-weight:800;color:#60738a}.metric strong{font-size:1.2rem}.schedule{border:1px solid var(--line);border-radius:9px;overflow:hidden}.day{display:grid;grid-template-columns:132px 1fr 1fr;border-bottom:1px solid var(--line);min-height:100px}.day:last-child{border:0}.day-name{padding:15px;background:#e3eef9;font-weight:900}.day-name small{display:block;margin-top:4px;color:#60738a}.shift{padding:11px;border-left:1px solid var(--line)}.shift h4{margin:0 0 8px;color:#49637e;font-size:.7rem;letter-spacing:.06em}.task{border-left:4px solid var(--green);background:#f3faf7;padding:7px 8px;margin:6px 0;border-radius:3px;font-size:.86rem}.task b,.task small{display:block}.task small,.empty{color:#65778d;font-size:.78rem;margin-top:3px}.mini{font-size:.7rem;padding:3px 7px;margin:6px 4px 0 0;background:#dce8f3;color:#123b69}#printHeader{display:none}@media(max-width:900px){.layout{grid-template-columns:1fr}.sticky{position:static}.day{grid-template-columns:1fr}.shift{border-left:0;border-top:1px solid var(--line)}}@media print{@page{size:A4 landscape;margin:9mm}body{background:#fff;font-size:10pt}header,.controls,.toolbar,.task button{display:none}.layout{display:block;padding:0}.card{border:0;box-shadow:none;padding:0}#printHeader{display:block;background:var(--navy);color:white;padding:10mm 12mm 7mm;margin:0 0 4mm}#printHeader small{display:block;color:#c8d9ed;font-weight:800;letter-spacing:.08em}#printHeader h1{font-size:22pt;margin:2mm 0 0}.print-metrics{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;background:#f1f5f9;border:1px solid var(--line);padding:4mm 5mm;margin-bottom:5mm}.print-metrics span{display:block;font-size:7pt;font-weight:800;color:#64748b}.print-metrics strong{font-size:11pt}.day{grid-template-columns:34mm 1fr 1fr;min-height:23mm}.day-name{padding:4mm}.shift{padding:3mm}.task{padding:2mm;margin:1mm 0}.print-day .day:not(.selected-day){display:none}}
 </style>
 </head>
 <body>
-<header><div><h1>Plan produkcji</h1><p>Harmonogram tygodniowy · dwie zmiany · offline</p></div><button onclick="generatePdf()">⬇ Pobierz PDF</button></header>
+<header><div><h1>Plan produkcji</h1><p>Harmonogram tygodniowy · Synchronizacja</p></div><button onclick="generatePdf()">⬇ Pobierz PDF</button></header>
 <main class="layout"><aside class="card sticky controls"><h2>Dane planu</h2>
-<label>Tydzień planowania<input id="week" type="date"></label><label class="checkbox"><input id="workSaturday" type="checkbox" onchange="setup()"> Pracująca sobota</label><h3>Pracownicy</h3><div class="employee"><input id="name" placeholder="Imię i nazwisko"><button onclick="addEmployee()">Dodaj</button></div><div id="people" class="chips"></div>
+<label>Tydzień planowania<input id="week" type="date" onchange="setup()"></label><label class="checkbox"><input id="workSaturday" type="checkbox" onchange="setup()"> Pracująca sobota</label><h3>Pracownicy</h3><div class="employee"><input id="name" placeholder="Imię i nazwisko"><button onclick="addEmployee()">Dodaj</button></div><div id="people" class="chips"></div>
 <h3 id="formTitle">Nowe przypisanie</h3><label>Dzień<select id="day"></select></label><div class="row"><label>Zmiana<select id="shift"><option value="1">Zmiana 1 · 06:00–14:00</option><option value="2">Zmiana 2 · 14:00–22:00</option></select></label><label>Pracownik<select id="employee"></select></label></div><label>Zadanie<input id="task" placeholder="np. Kręcenie Rolls Ritual"></label><label>Zlecenie<input id="order" placeholder="np. ORD-001"></label><label>Uwagi<textarea id="notes"></textarea></label><div class="actions"><button onclick="saveTask()">Zapisz przypisanie</button><button class="secondary" onclick="resetForm()">Wyczyść formularz</button></div>
-<h3>Przenoszenie danych</h3><div class="actions"><button class="secondary" onclick="exportData()">Eksportuj JSON</button><label class="file">Importuj JSON<input type="file" accept="application/json" onchange="importData(event)"></label><button class="danger" onclick="clearData()">Wyczyść plan</button></div></aside>
-<section class="card"><div class="toolbar"><div><h2>Harmonogram tygodniowy</h2><p id="period" class="muted"></p></div><div class="print-controls"><label>Zakres PDF<select id="printScope" onchange="render()"><option value="week">Cały tydzień</option><option value="day">Jeden dzień</option></select></label><label id="printDayWrap">Dzień do PDF<select id="printDay" onchange="render()"></select></label><label>Filtr zlecenia<input id="filter" placeholder="Wszystkie" oninput="render()"></label></div></div><div id="printHeader"><small>KALKULATOR PRODUKCJI</small><h1 id="printTitle">HARMONOGRAM PRODUKCJI - TYDZIEŃ</h1></div><div class="metrics print-metrics"><div class="metric"><span>OKRES</span><strong id="range">—</strong></div><div class="metric"><span>ZAPLANOWANE ZADANIA</span><strong id="tasks">0</strong></div><div class="metric"><span>GENEROWANO</span><strong id="generated">—</strong></div><div class="metric"><span>PRACOWNICY</span><strong id="count">0</strong></div></div><div id="schedule" class="schedule"></div></section></main>
+<h3>Synchronizacja z npoint</h3><div class="actions"><button onclick="fetchCloudData(true)">🔄 Pobierz z npoint</button><button class="secondary" onclick="copyJsonForNpoint()">📋 Kopiuj JSON do npoint</button><button class="secondary" onclick="exportData()">Eksportuj plik JSON</button><label class="file">Importuj JSON<input type="file" accept="application/json" onchange="importData(event)"></label><button class="danger" onclick="clearData()">Wyczyść plan</button></div><span id="syncStatus" class="sync-status">Status: Gotowy</span></aside>
+<section class="card"><div class="toolbar"><div><h2>Harmonogram tygodniowy</h2><p id="period" class="muted"></p><p id="lastChangeInfo" class="muted" style="margin-top:4px; font-weight:bold; color:var(--navy);">Ostatnia zmiana: —</p></div><div class="print-controls"><label>Zakres PDF<select id="printScope" onchange="render()"><option value="week">Cały tydzień</option><option value="day">Jeden dzień</option></select></label><label id="printDayWrap">Dzień do PDF<select id="printDay" onchange="render()"></select></label><label>Filtr zlecenia<input id="filter" placeholder="Wszystkie" oninput="render()"></label></div></div><div id="printHeader"><small>KALKULATOR PRODUKCJI</small><h1 id="printTitle">HARMONOGRAM PRODUKCJI - TYDZIEŃ</h1></div><div class="metrics print-metrics"><div class="metric"><span>OKRES</span><strong id="range">—</strong></div><div class="metric"><span>ZAPLANOWANE ZADANIA</span><strong id="tasks">0</strong></div><div class="metric"><span>GENEROWANO</span><strong id="generated">—</strong></div><div class="metric"><span>PRACOWNICY</span><strong id="count">0</strong></div></div><div id="schedule" class="schedule"></div></section></main>
 <script>
-const key="plan-produkcji-html-v1",D=["Poniedziałek","Wtorek","Środa","Czwartek","Piątek","Sobota","Niedziela"];let data=JSON.parse(localStorage.getItem(key)||'{"employees":[],"assignments":[]}'),editing="";
-const el=id=>document.getElementById(id),esc=x=>String(x||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));
-const iso=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");function save(){localStorage.setItem(key,JSON.stringify(data))}
-function monday(){let d=new Date(),n=(d.getDay()+6)%7;d.setDate(d.getDate()-n);return d}function days(){let a=[],d=new Date(el("week").value+"T00:00:00"),count=el("workSaturday").checked?6:5;for(let i=0;i<count;i++){let x=new Date(d);x.setDate(x.getDate()+i);a.push(x)}return a}
-function setup(){let keep=el("day").value,printKeep=el("printDay").value;el("day").innerHTML="";el("printDay").innerHTML="";days().forEach((d,i)=>{let text=D[i]+" · "+d.toLocaleDateString("pl-PL"),value=iso(d);el("day").add(new Option(text,value));el("printDay").add(new Option(text,value))});if(keep)el("day").value=keep;if(printKeep)el("printDay").value=printKeep;render()}
-function addEmployee(){let n=el("name").value.trim();if(n&&!data.employees.some(x=>x.toLowerCase()==n.toLowerCase()))data.employees.push(n);el("name").value="";save();renderPeople();render()}
-function renderPeople(){data.employees.sort((a,b)=>a.localeCompare(b,"pl"));el("people").innerHTML=data.employees.map(x=>"<span class='chip'>"+esc(x)+"</span>").join("")||"<span class='empty'>Brak pracowników</span>";let old=el("employee").value;el("employee").innerHTML=data.employees.map(x=>"<option>"+esc(x)+"</option>").join("");el("employee").value=data.employees.includes(old)?old:data.employees[0]||""}
-function saveTask(){let employee=el("employee").value,task=el("task").value.trim();if(!employee)return alert("Dodaj pracownika.");if(!task)return alert("Wpisz zadanie.");let a={id:editing||crypto.randomUUID(),date:el("day").value,shift:el("shift").value,employee:employee,task:task,order:el("order").value.trim(),notes:el("notes").value.trim()};data.assignments=editing?data.assignments.map(x=>x.id==editing?a:x):data.assignments.concat(a);save();resetForm();render()}
-function editTask(id){let a=data.assignments.find(x=>x.id==id);if(!a)return;editing=id;el("formTitle").textContent="Edycja przypisania";el("day").value=a.date;el("shift").value=a.shift;el("employee").value=a.employee;el("task").value=a.task;el("order").value=a.order||"";el("notes").value=a.notes||"";scrollTo({top:0,behavior:"smooth"})}
-function removeTask(id){if(confirm("Usunąć przypisanie?")){data.assignments=data.assignments.filter(x=>x.id!=id);save();render()}}
-function resetForm(){editing="";el("formTitle").textContent="Nowe przypisanie";el("task").value="";el("order").value="";el("notes").value=""}
-function render(){let ds=days(),f=el("filter").value.trim().toLowerCase(),items=data.assignments.filter(a=>ds.some(d=>iso(d)==a.date)&&(!f||(a.order||"").toLowerCase().includes(f))),scope=el("printScope").value,selected=el("printDay").value,forPdf=scope=="day"?items.filter(a=>a.date==selected):items,period=scope=="day"?(ds.find(d=>iso(d)==selected)||ds[0]).toLocaleDateString("pl-PL"):ds[0].toLocaleDateString("pl-PL")+" – "+ds[ds.length-1].toLocaleDateString("pl-PL");el("printDayWrap").style.display=scope=="day"?"block":"none";el("tasks").textContent=forPdf.length;el("count").textContent=data.employees.length;el("range").textContent=period;el("period").textContent="Okres: "+period;el("printTitle").textContent="HARMONOGRAM PRODUKCJI - "+(scope=="day"?"DZIEŃ":"TYDZIEŃ");el("generated").textContent=new Date().toLocaleString("pl-PL",{dateStyle:"short",timeStyle:"short"});el("schedule").innerHTML=ds.map((d,i)=>{let daily=items.filter(a=>a.date==iso(d)),blocks=["1","2"].map(s=>{let t=daily.filter(a=>a.shift==s).map(a=>"<div class='task'><b>"+esc(a.employee)+" · "+esc(a.task)+"</b><small>"+esc(a.order||"bez zlecenia")+(a.notes?" · "+esc(a.notes):"")+"</small><button class='mini' onclick=\"editTask('"+a.id+"')\">Edytuj</button><button class='mini' onclick=\"removeTask('"+a.id+"')\">Usuń</button></div>").join("")||"<div class='empty'>Brak zadań</div>";return "<div class='shift'><h4>ZMIANA "+s+" · "+(s=="1"?"06:00–14:00":"14:00–22:00")+"</h4>"+t+"</div>"}).join("");return "<article class='day "+(iso(d)==selected?"selected-day":"")+"'><div class='day-name'>"+D[i]+"<small>"+d.toLocaleDateString("pl-PL",{day:"2-digit",month:"2-digit",year:"numeric"})+"</small></div>"+blocks+"</article>"}).join("")}
+const API_URL = "https://api.npoint.io/5af347348127549fbd24";
+const D = ["Poniedziałek","Wtorek","Środa","Czwartek","Piątek","Sobota","Niedziela"];
+let data = { format: "plan-produkcji-html-v1", employees: [], assignments: [], lastModified: "—" }, editing="";
+
+const el = id => document.getElementById(id);
+const esc = x => String(x||"").replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));
+const iso = d => d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+
+function monday(d = new Date()){
+  let date = new Date(d), n = (date.getDay()+6)%7;
+  date.setDate(date.getDate()-n);
+  return date;
+}
+
+function days(){
+  let val = el("week").value;
+  let base = val ? new Date(val + "T00:00:00") : monday();
+  let a = [], count = el("workSaturday").checked ? 6 : 5;
+  for(let i=0; i<count; i++){
+    let x = new Date(base);
+    x.setDate(x.getDate() + i);
+    a.push(x);
+  }
+  return a;
+}
+
+function updateLastChangeDisplay() {
+  el("lastChangeInfo").textContent = "Ostatnia zmiana: " + (data.lastModified || "—");
+}
+
+async function fetchCloudData(showAlert = false) {
+  el("syncStatus").textContent = "Status: Pobieranie z npoint...";
+  try {
+    let res = await fetch(API_URL + "?nocache=" + Date.now(), { cache: "no-store" });
+    if(res.ok) {
+      let json = await res.json();
+      if(json && Array.isArray(json.assignments)) {
+        data = json;
+        if(!data.lastModified) data.lastModified = "—";
+        localStorage.setItem("plan-produkcji-sync", JSON.stringify(data));
+        
+        if(data.assignments.length > 0) {
+          let firstDate = new Date(data.assignments[0].date + "T00:00:00");
+          el("week").value = iso(monday(firstDate));
+        }
+
+        if(showAlert) alert("Pomyślnie pobrano najnowsze dane z npoint!");
+      }
+    }
+  } catch(e) {
+    let local = localStorage.getItem("plan-produkcji-sync");
+    if(local) {
+      try { data = JSON.parse(local); } catch(_) {}
+    }
+  }
+
+  if(!el("week").value) {
+    el("week").value = iso(monday());
+  }
+
+  renderPeople();
+  setup();
+  render();
+  updateLastChangeDisplay();
+  el("syncStatus").textContent = "Status: Gotowy";
+}
+
+function saveLocal() {
+  let now = new Date();
+  data.lastModified = String(now.getHours()).padStart(2,"0") + ":" + String(now.getMinutes()).padStart(2,"0") + " (" + String(now.getDate()).padStart(2,"0") + "." + String(now.getMonth()+1).padStart(2,"0") + ")";
+  localStorage.setItem("plan-produkcji-sync", JSON.stringify(data));
+  updateLastChangeDisplay();
+  el("syncStatus").textContent = "Status: Zapisano lokalnie";
+}
+
+function copyJsonForNpoint() {
+  let jsonString = JSON.stringify(data, null, 2);
+  navigator.clipboard.writeText(jsonString).then(() => {
+    alert("Skopiowano aktualny kod JSON do schowka! Wklej go teraz na npoint.io, aby zaktualizować chmurę.");
+    el("syncStatus").textContent = "Status: Skopiowano JSON do schowka";
+  }).catch(() => {
+    exportData();
+    alert("Nie udało się skopiować automatycznie – pobieram plik JSON na dysk.");
+  });
+}
+
+function setup(){
+  let keep = el("day").value, printKeep = el("printDay").value;
+  el("day").innerHTML = "";
+  el("printDay").innerHTML = "";
+  
+  days().forEach((d, i) => {
+    let text = D[i] + " · " + d.toLocaleDateString("pl-PL"), value = iso(d);
+    el("day").add(new Option(text, value));
+    el("printDay").add(new Option(text, value));
+  });
+  
+  if(keep) el("day").value = keep;
+  if(printKeep) el("printDay").value = printKeep;
+  render();
+}
+
+function addEmployee(){
+  let n = el("name").value.trim();
+  if(n && !data.employees.some(x => x.toLowerCase() == n.toLowerCase())) data.employees.push(n);
+  el("name").value = "";
+  saveLocal();
+  renderPeople();
+  render();
+}
+
+function renderPeople(){
+  if(!Array.isArray(data.employees)) data.employees = [];
+  data.employees.sort((a,b) => a.localeCompare(b,"pl"));
+  el("people").innerHTML = data.employees.map(x => "<span class='chip'>"+esc(x)+"</span>").join("") || "<span class='empty'>Brak pracowników</span>";
+  let old = el("employee").value;
+  el("employee").innerHTML = data.employees.map(x => "<option>"+esc(x)+"</option>").join("");
+  el("employee").value = data.employees.includes(old) ? old : (data.employees[0] || "");
+}
+
+function saveTask(){
+  let employee = el("employee").value, task = el("task").value.trim();
+  if(!employee) return alert("Dodaj pracownika.");
+  if(!task) return alert("Wpisz zadanie.");
+  if(!Array.isArray(data.assignments)) data.assignments = [];
+  
+  let a = {
+    id: editing || crypto.randomUUID(),
+    date: el("day").value,
+    shift: el("shift").value,
+    employee: employee,
+    task: task,
+    order: el("order").value.trim(),
+    notes: el("notes").value.trim()
+  };
+  data.assignments = editing ? data.assignments.map(x => x.id == editing ? a : x) : data.assignments.concat(a);
+  saveLocal();
+  resetForm();
+  render();
+}
+
+function editTask(id){
+  let a = data.assignments.find(x => x.id == id);
+  if(!a) return;
+  editing = id;
+  el("formTitle").textContent = "Edycja przypisania";
+  el("day").value = a.date;
+  el("shift").value = a.shift;
+  el("employee").value = a.employee;
+  el("task").value = a.task;
+  el("order").value = a.order || "";
+  el("notes").value = a.notes || "";
+  scrollTo({top:0, behavior:"smooth"});
+}
+
+function removeTask(id){
+  if(confirm("Usunąć przypisanie?")){
+    data.assignments = data.assignments.filter(x => x.id != id);
+    saveLocal();
+    render();
+  }
+}
+
+function resetForm(){
+  editing = "";
+  el("formTitle").textContent = "Nowe przypisanie";
+  el("task").value = "";
+  el("order").value = "";
+  el("notes").value = "";
+}
+
+function render(){
+  let ds = days(), f = el("filter").value.trim().toLowerCase();
+  if(!Array.isArray(data.assignments)) data.assignments = [];
+  
+  let validDates = ds.map(d => iso(d));
+  let items = data.assignments.filter(a => validDates.includes(a.date) && (!f || (a.order||"").toLowerCase().includes(f) || (a.task||"").toLowerCase().includes(f)));
+  
+  let scope = el("printScope").value, selected = el("printDay").value;
+  let forPdf = scope == "day" ? items.filter(a => a.date == selected) : items;
+  let period = scope == "day" ? (ds.find(d => iso(d) == selected) || ds[0]).toLocaleDateString("pl-PL") : (ds[0] ? ds[0].toLocaleDateString("pl-PL") + " – " + ds[ds.length-1].toLocaleDateString("pl-PL") : "—");
+  
+  el("printDayWrap").style.display = scope == "day" ? "block" : "none";
+  el("tasks").textContent = forPdf.length;
+  el("count").textContent = data.employees.length;
+  el("range").textContent = period;
+  el("period").textContent = "Okres: " + period;
+  el("printTitle").textContent = "HARMONOGRAM PRODUKCJI - " + (scope == "day" ? "DZIEŃ" : "TYDZIEŃ");
+  el("generated").textContent = new Date().toLocaleString("pl-PL", {dateStyle:"short", timeStyle:"short"});
+  
+  el("schedule").innerHTML = ds.map((d, i) => {
+    let daily = items.filter(a => a.date == iso(d));
+    let blocks = ["1","2"].map(s => {
+      let t = daily.filter(a => a.shift == s).map(a => 
+        "<div class='task'><b>" + esc(a.employee) + " · " + esc(a.task) + "</b><small>" + esc(a.order || "bez zlecenia") + (a.notes ? " · " + esc(a.notes) : "") + "</small><button class='mini' onclick=\"editTask('" + a.id + "')\">Edytuj</button><button class='mini' onclick=\"removeTask('" + a.id + "')\">Usuń</button></div>"
+      ).join("") || "<div class='empty'>Brak zadań</div>";
+      return "<div class='shift'><h4>ZMIANA " + s + " · " + (s == "1" ? "06:00–14:00" : "14:00–22:00") + "</h4>" + t + "</div>";
+    }).join("");
+    return "<article class='day " + (iso(d) == selected ? "selected-day" : "") + "'><div class='day-name'>" + D[i] + "<small>" + d.toLocaleDateString("pl-PL",{day:"2-digit",month:"2-digit",year:"numeric"}) + "</small></div>" + blocks + "</article>";
+  }).join("");
+}
+
 function pdfAscii(value){let m={"ą":"a","ć":"c","ę":"e","ł":"l","ń":"n","ó":"o","ś":"s","ź":"z","ż":"z","Ą":"A","Ć":"C","Ę":"E","Ł":"L","Ń":"N","Ó":"O","Ś":"S","Ź":"Z","Ż":"Z","–":"-","—":"-","·":" / "};return String(value||"").replace(/[ąćęłńóśźżĄĆĘŁŃÓŚŹŻ–—·]/g,c=>m[c]||c).replace(/[\(\)\\]/g,c=>"\\"+c)}
 function pdfWrap(value,max){let words=pdfAscii(value).split(/\s+/),lines=[],line="";words.forEach(w=>{let next=line?(line+" "+w):w;if(next.length>max&&line){lines.push(line);line=w}else line=next});if(line)lines.push(line);return lines}
 function pdfSource(pages){let count=pages.length,pageIds=[],objs=[];for(let i=0;i<count;i++)pageIds.push(3+i);let font1=3+count,font2=font1+1,contentStart=font2+1;objs[1]="<< /Type /Catalog /Pages 2 0 R >>";objs[2]="<< /Type /Pages /Kids ["+pageIds.map(i=>i+" 0 R").join(" ")+"] /Count "+count+" >>";for(let i=0;i<count;i++)objs[3+i]="<< /Type /Page /Parent 2 0 R /MediaBox [0 0 841.89 595.28] /Resources << /Font << /F1 "+font1+" 0 R /F2 "+font2+" 0 R >> >> /Contents "+(contentStart+i)+" 0 R >>";objs[font1]="<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>";objs[font2]="<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>";pages.forEach((p,i)=>objs[contentStart+i]="<< /Length "+p.length+" >>\nstream\n"+p+"\nendstream");let out="%PDF-1.4\n",offsets=[0];for(let i=1;i<objs.length;i++){offsets[i]=out.length;out+=i+" 0 obj\n"+objs[i]+"\nendobj\n"}let start=out.length;out+="xref\n0 "+objs.length+"\n0000000000 65535 f \n";for(let i=1;i<objs.length;i++)out+=String(offsets[i]).padStart(10,"0")+" 00000 n \n";return out+"trailer\n<< /Size "+objs.length+" /Root 1 0 R >>\nstartxref\n"+start+"\n%%EOF"}
@@ -35,7 +225,14 @@ function rect(x,yy,w,h,r,g,b){commands.push(r+" "+g+" "+b+" rg "+x+" "+yy+" "+w+
 function startPage(){commands=[];rect(50,495,742,68,.07,.23,.41);text(66,545,8,"KALKULATOR PRODUKCJI",true,"0.78 0.86 0.94");text(66,517,21,title,true,"1 1 1");text(665,526,10,"HARMONOGRAM",true,"1 1 1");rect(50,442,742,37,.94,.96,.98);text(62,465,7,"OKRES",true,"0.38 0.45 0.55");text(62,450,11,period,true);rect(50,400,110,28,.07,.23,.41);rect(160,400,316,28,.07,.23,.41);rect(476,400,316,28,.07,.23,.41);text(62,410,8,"DZIEN",true,"1 1 1");text(173,410,8,"ZMIANA 1  /  06:00-14:00",true,"1 1 1");text(489,410,8,"ZMIANA 2  /  14:00-22:00",true,"1 1 1");y=400}
 function flush(){commands.push("0.79 0.85 0.91 RG 0.6 w 50 26 m 792 26 l S");text(50,14,7,"Kalkulator produkcji / Harmonogram operacyjny",false,"0.38 0.45 0.55");text(740,14,7,"Strona "+(pages.length+1),false,"0.38 0.45 0.55");pages.push(commands.join("\n"))}
 function cellTasks(list,x,top,width){if(!list.length){text(x+10,top-20,9,"-",false,"0.38 0.45 0.55");return}let cursor=top-16;list.forEach(a=>{let first=pdfWrap(a.employee+" - "+a.task,42);first.forEach(l=>{text(x+10,cursor,8.5,l,l==first[0]);cursor-=10});let detail=(a.order||"bez zlecenia")+(a.notes?" / "+a.notes:"");pdfWrap(detail,48).forEach(l=>{text(x+10,cursor,7.2,l,false,"0.38 0.45 0.55");cursor-=9});cursor-=5})}
-startPage();printedDays.forEach((d,index)=>{let daily=shown.filter(a=>a.date==iso(d)),s1=daily.filter(a=>a.shift=="1"),s2=daily.filter(a=>a.shift=="2"),lines=Math.max(2,s1.length*3,s2.length*3),height=Math.max(48,lines*12+14);if(y-height<42){flush();startPage()}rect(50,y-height,110,height,.88,.93,.98);rect(160,y-height,316,height,.98,.99,1);rect(476,y-height,316,height,.98,.99,1);line(50,y-height,792,y-height);line(160,y-height,160,y);line(476,y-height,476,y);text(62,y-21,11,D[(d.getDay()+6)%7].toUpperCase(),true);text(62,y-35,8,d.toLocaleDateString("pl-PL"),true);cellTasks(s1,160,y,316);cellTasks(s2,476,y,316);y-=height});flush();let blob=new Blob([pdfSource(pages)],{type:"application/pdf"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=(scope=="day"?"harmonogram_dzien_":"harmonogram_tydzien_")+(scope=="day"?chosen:iso(printedDays[0]))+".pdf";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
-function exportData(){let a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:"application/json"}));a.download="plan_produkcji.json";a.click()}function importData(e){let r=new FileReader();r.onload=()=>{try{let x=JSON.parse(r.result);if(!Array.isArray(x.employees)||!Array.isArray(x.assignments))throw 0;data=x;save();renderPeople();render()}catch(_){alert("Nieprawidłowy plik.")}};if(e.target.files[0])r.readAsText(e.target.files[0])}function clearData(){if(confirm("Wyczyścić cały plan?")){data={employees:[],assignments:[]};save();renderPeople();render()}}
-el("week").value=iso(monday());el("week").onchange=setup;setup();renderPeople();render();
+startPage();printedDays.forEach((d,index)=>{let daily=shown.filter(a=>a.date==iso(d)),s1=daily.filter(a=>a.shift=="1"),s2=daily.filter(a=>a.shift=="2"),lines=Math.max(2,s1.length*3,s2.length*3),height=Math.max(48,lines*12+14);if(y-height<42){flush();startPage()}rect(50,y-height,110,height,.88,.93,.98);rect(160,y-height,316,height,.98,.99,1);rect(476,y-height,316,height,.98,.99,1);line(50,y-height,792,y-height);line(160,y-height,160,y);line(476,y-height,476,y);text(62,y-21,11,D[index].toUpperCase(),true);text(62,y-35,8,d.toLocaleDateString("pl-PL"),true);cellTasks(s1,160,y,316);cellTasks(s2,476,y,316);y-=height});flush();let blob=new Blob([pdfSource(pages)],{type:"application/pdf"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=(scope=="day"?"harmonogram_dzien_":"harmonogram_tydzien_")+(scope=="day"?chosen:iso(printedDays[0]))+".pdf";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
+function exportData(){let a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:"application/json"}));a.download="plan_produkcji.json";a.click()}
+function importData(e){let r=new FileReader();r.onload=()=>{try{let x=JSON.parse(r.result);if(!Array.isArray(x.employees)||!Array.isArray(x.assignments))throw 0;data=x;saveLocal();renderPeople();render()}catch(_){alert("Nieprawidłowy plik.")}};if(e.target.files[0])r.readAsText(e.target.files[0])}
+function clearData(){if(confirm("Wyczyścić cały plan?")){data={format:"plan-produkcji-html-v1",employees:[],assignments:[],lastModified:"Wyczyszczono"};saveLocal();renderPeople();render()}}
+
+// Start pobierania
+if(!el("week").value) {
+  el("week").value = iso(monday());
+}
+fetchCloudData();
 </script></body></html>

@@ -8,13 +8,14 @@
 </style>
 </head>
 <body>
-<header><div><h1>Plan produkcji</h1><p>Harmonogram tygodniowy · Automatyczna synchronizacja · Wersja 2.2.2</p></div><button onclick="generatePdf()">⬇ Pobierz PDF</button></header>
+<header><div><h1>Plan produkcji</h1><p>Harmonogram tygodniowy · Automatyczna synchronizacja · Wersja 2.4</p></div><button onclick="generatePdf()">⬇ Pobierz PDF</button></header>
 <main class="layout"><aside class="card sticky controls"><h2>Dane planu</h2>
 <label>Tydzień planowania<input id="week" type="date" onchange="setup()"></label><label class="checkbox"><input id="workSaturday" type="checkbox" onchange="setup()"> Pracująca sobota</label><h3>Pracownicy</h3><div class="employee"><input id="name" placeholder="Imię i nazwisko"><button onclick="addEmployee()">Dodaj</button></div><div id="people" class="chips"></div>
 <h3 id="formTitle">Nowe przypisanie</h3><label>Dzień<select id="day"></select></label><div class="row"><label>Zmiana<select id="shift"><option value="1">Zmiana 1 · 06:00–14:00</option><option value="2">Zmiana 2 · 14:00–22:00</option></select></label><label>Pracownik<select id="employee"></select></label></div><label>Zadanie<input id="task" placeholder="np. Kręcenie Rolls Ritual"></label><label>Zlecenie<input id="order" placeholder="np. ORD-001"></label><label>Uwagi<textarea id="notes"></textarea></label><div class="actions"><button onclick="saveTask()">Zapisz przypisanie</button><button class="secondary" onclick="resetForm()">Wyczyść formularz</button></div>
 <h3>Synchronizacja z chmurą</h3><div class="actions"><button onclick="fetchCloudData(true)">🔄 Odśwież z chmury</button><button class="secondary" onclick="exportData()">Eksportuj plik JSON</button><label class="file">Importuj JSON<input type="file" accept="application/json" onchange="importData(event)"></label><button class="danger" onclick="clearData()">Wyczyść plan</button></div><span id="syncStatus" class="sync-status">Status: Gotowy</span></aside>
 <section class="card"><div class="toolbar"><div><h2>Harmonogram tygodniowy</h2><p id="period" class="muted"></p><p id="lastChangeInfo" class="muted" style="margin-top:4px; font-weight:bold; color:var(--navy);">Ostatnia zmiana: —</p></div><div class="print-controls"><label>Zakres PDF<select id="printScope" onchange="render()"><option value="week">Cały tydzień</option><option value="day">Jeden dzień</option></select></label><label id="printDayWrap">Dzień do PDF<select id="printDay" onchange="render()"></select></label><label>Filtr zlecenia<input id="filter" placeholder="Wszystkie" oninput="render()"></label></div></div><div id="printHeader"><small>KALKULATOR PRODUKCJI</small><h1 id="printTitle">HARMONOGRAM PRODUKCJI - TYDZIEŃ</h1></div><div class="metrics print-metrics"><div class="metric"><span>OKRES</span><strong id="range">—</strong></div><div class="metric"><span>ZAPLANOWANE ZADANIA</span><strong id="tasks">0</strong></div><div class="metric"><span>GENEROWANO</span><strong id="generated">—</strong></div><div class="metric"><span>PRACOWNICY</span><strong id="count">0</strong></div></div><div id="schedule" class="schedule"></div></section></main>
 <script>
+// Upewnij się, że wklejasz tutaj ID swojego NOWEGO binu npoint.io
 const API_URL = "https://api.npoint.io/9c330bcf7b22d0830305";
 const D = ["Poniedziałek","Wtorek","Środa","Czwartek","Piątek","Sobota","Niedziela"];
 let data = { format: "plan-produkcji-html-v1", employees: [], assignments: [], lastModified: "—" }, editing="";
@@ -58,20 +59,19 @@ async function fetchCloudData(showAlert = false) {
       if(json && Array.isArray(json.assignments)) {
         data = json;
         if(!data.lastModified) data.lastModified = "—";
-        localStorage.setItem("plan-produkcji-v22", JSON.stringify(data));
-        
-        
+        localStorage.setItem("plan-produkcji-v24", JSON.stringify(data));
 
         if(showAlert) alert("Pomyślnie pobrano najnowsze dane z chmury!");
       }
     }
   } catch(e) {
-    let local = localStorage.getItem("plan-produkcji-v22");
+    let local = localStorage.getItem("plan-produkcji-v24");
     if(local) {
       try { data = JSON.parse(local); } catch(_) {}
     }
   }
 
+  // Zawsze ustawia bieżący tydzień na starcie
   if(!el("week").value) {
     el("week").value = iso(monday());
   }
@@ -87,31 +87,35 @@ async function saveCloudData() {
   let now = new Date();
   data.lastModified = String(now.getHours()).padStart(2,"0") + ":" + String(now.getMinutes()).padStart(2,"0") + " (" + String(now.getDate()).padStart(2,"0") + "." + String(now.getMonth()+1).padStart(2,"0") + ")";
 
-  localStorage.setItem("plan-produkcji-v22", JSON.stringify(data));
+  localStorage.setItem("plan-produkcji-v24", JSON.stringify(data));
   updateLastChangeDisplay();
   el("syncStatus").textContent = "Status: Zapisywanie w chmurze...";
   
   let payload = JSON.stringify(data);
 
   try {
-    // Próba bezpośredniego zapisu
+    // Nowe bine na npoint.io wymagają metody PUT do aktualizacji
     let res = await fetch(API_URL, {
-      method: "POST",
+      method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: payload
     });
     
-    if(!res.ok) {
-      // Jeśli przeglądarka zablokuje CORS, wysyłamy przez bezpieczną bramkę proxy
-      let proxyRes = await fetch("https://corsproxy.io/?" + encodeURIComponent(API_URL), {
-        method: "PUT",
+    if(res.ok) {
+      el("syncStatus").textContent = "Status: Zapisano w chmurze!";
+    } else {
+      // Awaryjna próba POST
+      let resPost = await fetch(API_URL, {
+        method: "POST",
         headers: { "Content-Type": "application/json" },
         body: payload
       });
-      if(!proxyRes.ok) throw new Error("Błąd proxy");
+      if(resPost.ok) {
+        el("syncStatus").textContent = "Status: Zapisano w chmurze!";
+      } else {
+        el("syncStatus").textContent = "Status: Zapisano lokalnie";
+      }
     }
-    
-    el("syncStatus").textContent = "Status: Zapisano w chmurze!";
   } catch(e) {
     el("syncStatus").textContent = "Status: Zapisano lokalnie (awaria sieci)";
   }

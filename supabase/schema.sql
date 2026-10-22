@@ -10,12 +10,16 @@ create table if not exists public.production_schedule_state (
 
 create table if not exists public.production_schedule_users (
   id uuid primary key references auth.users(id) on delete cascade,
-  display_name text not null default '',
+  display_name text default '',
   role text not null default 'Pracownik' check (role in ('Administrator', 'Właściciel', 'Pracownik')),
   permissions text[] not null default array['read','export_pdf']::text[],
   active boolean not null default false,
   created_at timestamptz not null default now()
 );
+
+-- Istniejące konta Auth (np. anonimowe) mogą nie posiadać e-maila ani nazwy.
+-- Nazwa wyświetlana jest wygodą UI, a nie identyfikatorem bezpieczeństwa.
+alter table public.production_schedule_users alter column display_name drop not null;
 
 -- Tworzy profile również dla kont, które istniały zanim powstał ten harmonogram.
 insert into public.production_schedule_users (id, display_name)

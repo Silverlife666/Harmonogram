@@ -19,8 +19,10 @@ create table if not exists public.production_schedule_users (
 
 -- Tworzy profile również dla kont, które istniały zanim powstał ten harmonogram.
 insert into public.production_schedule_users (id, display_name)
-select id, coalesce(nullif(raw_user_meta_data ->> 'display_name', ''), nullif(split_part(coalesce(email, ''), '@', 1), ''), id::text)
-from auth.users on conflict (id) do nothing;
+select u.id, coalesce(nullif(u.raw_user_meta_data ->> 'display_name', ''), nullif(split_part(coalesce(u.email, ''), '@', 1), ''), u.id::text)
+from auth.users as u
+where true
+on conflict (id) do nothing;
 
 alter table public.production_schedule_state enable row level security;
 alter table public.production_schedule_users enable row level security;

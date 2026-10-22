@@ -21,8 +21,9 @@ create table if not exists public.production_schedule_users (
 insert into public.production_schedule_users (id, display_name)
 select u.id, coalesce(nullif(u.raw_user_meta_data ->> 'display_name', ''), nullif(split_part(coalesce(u.email, ''), '@', 1), ''), u.id::text)
 from auth.users as u
-where true
-on conflict (id) do nothing;
+where not exists (
+  select 1 from public.production_schedule_users as p where p.id = u.id
+);
 
 alter table public.production_schedule_state enable row level security;
 alter table public.production_schedule_users enable row level security;

@@ -434,15 +434,78 @@ button,.file{
 }
 .user-bar{display:flex;align-items:center;gap:9px}.user-badge{font-size:.78rem;font-weight:800;background:#ffffff20;border:1px solid #ffffff45;border-radius:14px;padding:6px 9px}.header-action{background:#fff;color:var(--navy)}
 .login-screen{position:fixed;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;padding:20px;background:#123b69e8}.login-card{width:min(410px,100%);background:#fff;border-radius:14px;padding:28px;box-shadow:0 24px 70px #001a}.login-card h2{font-size:1.4rem}.login-card p{color:#64748b;line-height:1.45}.login-error{min-height:22px;color:#ae3d3d;font-size:.86rem;margin-top:10px}.admin-panel{display:none;margin-top:18px;border-top:1px solid var(--line);padding-top:18px}.admin-panel.visible{display:block}.permissions{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin:10px 0}.permissions .checkbox{font-size:.76rem;margin:0}.hidden{display:none!important}
+
+/* ===== Panel użytkowników ===== */
+.um-sep{border-top:1px solid var(--line);margin:22px 0 4px;padding-top:6px}
+.um{position:fixed;inset:0;z-index:30;background:#0b1e36b0;display:flex;align-items:center;justify-content:center;padding:20px}
+.um-card{background:#fff;border-radius:14px;width:min(920px,100%);height:min(680px,100%);display:flex;flex-direction:column;box-shadow:0 24px 70px #001a;overflow:hidden}
+.um-head{display:flex;justify-content:space-between;align-items:center;padding:14px 20px;border-bottom:1px solid var(--line)}
+.um-head h2{margin:0}
+.um-x{background:transparent;color:var(--ink);font-size:1.6rem;line-height:1;padding:2px 10px}
+.um-x:hover{background:var(--pale)}
+.um-body{display:grid;grid-template-columns:290px 1fr;flex:1;min-height:0}
+.um-list{border-right:1px solid var(--line);padding:14px;display:flex;flex-direction:column;gap:10px;min-height:0;background:#f6f9fc}
+#umItems{overflow:auto;display:flex;flex-direction:column;gap:6px;flex:1;min-height:0}
+.um-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border:1px solid transparent;border-radius:9px;background:transparent;color:var(--ink);text-align:left;width:100%;font-weight:600}
+.um-item:hover{background:#fff;border-color:var(--line)}
+.um-item.on{background:#fff;border-color:var(--navy);box-shadow:0 0 0 1px var(--navy)}
+.um-item.off{opacity:.6}
+.um-av{flex:none;width:36px;height:36px;border-radius:50%;background:var(--pale);color:var(--navy);display:flex;align-items:center;justify-content:center;font-size:.82rem;font-weight:800;border:1px solid var(--line)}
+.um-item .um-meta{min-width:0;display:flex;flex-direction:column;gap:2px}
+.um-item .um-meta b{font-size:.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.um-chip{display:inline-block;font-size:.68rem;font-weight:800;border-radius:10px;padding:2px 8px;background:var(--pale);color:var(--navy);border:1px solid var(--line);width:fit-content}
+.um-chip.admin{background:var(--navy);color:#fff;border-color:var(--navy)}
+.um-chip.inactive{background:#f3e3e3;color:#ae3d3d;border-color:#e4c2c2}
+.um-ghost{background:#fff;color:var(--navy);border:1px solid var(--navy)}
+.um-ghost:hover{background:var(--pale)}
+.um-right{display:flex;flex-direction:column;min-height:0}
+#umForm{flex:1;overflow:auto;padding:18px 22px}
+.um-title{display:flex;align-items:center;gap:10px;font-size:1.15rem;font-weight:800;margin-bottom:4px}
+.um-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.um-roles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.um-role{display:flex;flex-direction:column;gap:3px;margin:0;padding:10px;border:1px solid #b8c6d7;border-radius:9px;cursor:pointer;text-transform:none;letter-spacing:0;font-weight:400;position:relative}
+.um-role input{position:absolute;opacity:0;pointer-events:none}
+.um-role b{font-size:.9rem}
+.um-role small{font-size:.74rem;color:#61748a;line-height:1.3}
+.um-role.on{border-color:var(--navy);background:var(--pale);box-shadow:0 0 0 1px var(--navy)}
+.um-role.dis{opacity:.5;cursor:not-allowed}
+.um-perms{border:1px solid #b8c6d7;border-radius:9px;overflow:hidden}
+.um-perm{margin:0;padding:10px 12px;border-bottom:1px solid var(--line);align-items:flex-start}
+.um-perm:last-child{border-bottom:0}
+.um-perm span{display:flex;flex-direction:column;gap:2px}
+.um-perm small,.um-hint{font-size:.76rem;color:#61748a;line-height:1.35}
+.um-perm input{margin-top:2px}
+.um-hint{margin:6px 0 0}
+.um-active{margin-top:16px;padding:11px 12px;border:1px solid #b8c6d7;border-radius:9px;align-items:flex-start}
+.um-active span{display:flex;flex-direction:column;gap:2px}
+.um-details{margin-top:12px;font-size:.85rem}
+.um-details summary{cursor:pointer;color:var(--navy);font-weight:700}
+.um-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 22px;border-top:1px solid var(--line);background:#f6f9fc}
+.um-foot .um-state{font-size:.8rem;color:#61748a}
+.um-foot .um-state.dirty{color:#a15c00;font-weight:700}
+.um-foot .um-btns{display:flex;gap:8px}
+.um-foot button:disabled{opacity:.45;cursor:not-allowed}
+.um-empty{color:#61748a;padding:30px 10px;text-align:center}
+.toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);opacity:0;pointer-events:none;z-index:50;background:var(--navy);color:#fff;font-weight:700;font-size:.9rem;padding:11px 18px;border-radius:10px;box-shadow:0 10px 30px #0004;transition:.25s;max-width:min(520px,92vw);text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.err{background:#ae3d3d}
+@media (max-width:760px){
+  .um{padding:0}.um-card{height:100%;border-radius:0}
+  .um-body{grid-template-columns:1fr;grid-template-rows:auto 1fr}
+  .um-list{border-right:0;border-bottom:1px solid var(--line);max-height:210px}
+  .um-roles,.um-grid{grid-template-columns:1fr}
+  .um-foot{flex-direction:column;align-items:stretch}.um-foot .um-btns button{flex:1}
+}
 </style>
 </head>
 <body>
 <header><div><h1>Plan produkcji</h1><p>Harmonogram tygodniowy · Synchronizacja Supabase · Wersja 2.0</p></div><div class="user-bar"><span id="userBadge" class="user-badge">Nie zalogowano</span><button id="logoutButton" class="header-action hidden" onclick="logout()">Wyloguj</button><button onclick="generatePdf()">⬇ Pobierz PDF</button></div></header>
 <div id="loginScreen" class="login-screen"><div class="login-card"><h2>Logowanie do harmonogramu</h2><p>Użyj tego samego e-maila i PIN-u jak w poprzednim harmonogramie.</p><label>Login / e-mail<input id="loginEmail" type="email" autocomplete="username" placeholder="np. pracownik@firma.pl"></label><label>PIN<input id="loginPin" type="password" inputmode="numeric" autocomplete="current-password" placeholder="••••"></label><div class="actions"><button onclick="login()">Zaloguj</button></div><div id="loginError" class="login-error"></div></div></div>
+<div id="usersModal" class="um hidden" onmousedown="if(event.target===this)closeUsers()"><div class="um-card" role="dialog" aria-modal="true" aria-labelledby="umTitle"><div class="um-head"><h2 id="umTitle">Użytkownicy i uprawnienia</h2><button class="um-x" onclick="closeUsers()" aria-label="Zamknij">×</button></div><div class="um-body"><div class="um-list"><input id="umSearch" type="search" placeholder="Szukaj użytkownika…" oninput="renderUserList()"><div id="umItems"></div><button class="um-ghost" onclick="newUserForm()">＋ Nowy użytkownik</button></div><div class="um-right"><div id="umForm"></div><div class="um-foot"><span id="umState" class="um-state"></span><div class="um-btns"><button id="umReset" class="um-ghost" onclick="resetUserForm()">Cofnij zmiany</button><button id="umSave" onclick="saveUser()">Zapisz</button></div></div></div></div></div></div><div id="toast" class="toast"></div>
 <main class="layout"><aside class="card sticky controls"><h2>Dane planu</h2>
 <label>Tydzień planowania<input id="week" type="date" onchange="setup()"></label><label class="checkbox"><input id="workSaturday" type="checkbox" onchange="setup()"> Pracująca sobota</label><h3>Pracownicy</h3><div class="employee"><input id="name" placeholder="Imię i nazwisko"><button id="addEmployeeButton" onclick="addEmployee()">Dodaj</button></div><div id="people" class="chips"></div>
 <h3 id="formTitle">Nowe przypisanie</h3><label>Dzień<select id="day"></select></label><div class="row"><label>Zmiana<select id="shift"><option value="1">Zmiana 1 · 06:00–14:00</option><option value="2">Zmiana 2 · 14:00–22:00</option></select></label><label>Pracownik<select id="employee"></select></label></div><label>Zadanie<input id="task" placeholder="np. Kręcenie Rolls Ritual"></label><label>Zlecenie<input id="order" placeholder="np. ORD-001"></label><label>Uwagi<textarea id="notes"></textarea></label><div class="actions"><button id="saveTaskButton" onclick="saveTask()">Zapisz przypisanie</button><button class="secondary" onclick="resetForm()">Wyczyść formularz</button></div>
-<h3>Synchronizacja z chmurą</h3><div class="actions"><button onclick="fetchCloudData(true)">🔄 Odśwież z chmury</button><button class="secondary" onclick="exportData()">Eksportuj plik JSON</button><label id="importLabel" class="file">Importuj JSON<input type="file" accept="application/json" onchange="importData(event)"></label><button id="clearDataButton" class="danger" onclick="clearData()">Wyczyść plan</button></div><span id="syncStatus" class="sync-status">Status: Gotowy</span><section id="adminPanel" class="admin-panel"><h3>Uprawnienia użytkownika</h3><label>Użytkownik<select id="managedUser" onchange="showManagedUser()"></select></label><label>Nazwa wyświetlana<input id="managedName"></label><label>Rola<select id="managedRole"><option>Administrator</option><option>Właściciel</option><option>Pracownik</option></select></label><label class="checkbox"><input id="managedActive" type="checkbox"> Konto aktywne</label><div class="permissions"><label class="checkbox"><input type="checkbox" value="edit_plan"> Edycja planu</label><label class="checkbox"><input type="checkbox" value="manage_people"> Pracownicy</label><label class="checkbox"><input type="checkbox" value="export_pdf"> Pobieranie PDF</label></div><button onclick="saveManagedUser()">Zapisz uprawnienia</button></section></aside>
+<h3>Synchronizacja z chmurą</h3><div class="actions"><button onclick="fetchCloudData(true)">🔄 Odśwież z chmury</button><button class="secondary" onclick="exportData()">Eksportuj plik JSON</button><label id="importLabel" class="file">Importuj JSON<input type="file" accept="application/json" onchange="importData(event)"></label><button id="clearDataButton" class="danger" onclick="clearData()">Wyczyść plan</button></div><span id="syncStatus" class="sync-status">Status: Gotowy</span><section id="adminPanel" class="admin-panel"><h3>Użytkownicy</h3><div class="actions"><button onclick="openUsers()">👥 Zarządzaj użytkownikami</button></div></section></aside>
 <section class="card"><div class="toolbar"><div><h2>Harmonogram tygodniowy</h2><p id="period" class="muted"></p><p id="lastChangeInfo" class="muted" style="margin-top:4px; font-weight:bold; color:var(--navy);">Ostatnia zmiana: —</p></div><div class="print-controls"><label>Zakres PDF<select id="printScope" onchange="render()"><option value="week">Cały tydzień</option><option value="day">Jeden dzień</option></select></label><label id="printDayWrap">Dzień do PDF<select id="printDay" onchange="render()"></select></label><label>Filtr zlecenia<input id="filter" placeholder="Wszystkie" oninput="render()"></label></div></div><div id="printHeader"><small>KALKULATOR PRODUKCJI</small><h1 id="printTitle">HARMONOGRAM PRODUKCJI - TYDZIEŃ</h1></div><div class="metrics print-metrics"><div class="metric"><span>OKRES</span><strong id="range">—</strong></div><div class="metric"><span>ZAPLANOWANE ZADANIA</span><strong id="tasks">0</strong></div><div class="metric"><span>GENEROWANO</span><strong id="generated">—</strong></div><div class="metric"><span>PRACOWNICY</span><strong id="count">0</strong></div></div><div id="schedule" class="schedule"></div></section></main>
 <script>
 // Ten sam projekt Supabase i te same konta Auth co w dostawyozadania.
@@ -463,11 +526,170 @@ function requirePermission(permission){if(can(permission))return true;alert("Nie
 function applyPermissions(){let toggle=(id,permission)=>el(id).classList.toggle("hidden",!can(permission));toggle("saveTaskButton","edit_plan");toggle("importLabel","edit_plan");toggle("addEmployeeButton","manage_people");el("clearDataButton").classList.toggle("hidden",!profile||profile.role!=="Administrator");el("adminPanel").classList.toggle("visible",!!profile&&profile.role==="Administrator");el("userBadge").textContent=profile?`${profile.display_name||sessionUser.email} · ${profile.role}`:"Nie zalogowano";el("logoutButton").classList.toggle("hidden",!profile)}
 async function loadProfile(){let {data:loaded,error}=await supabaseClient.from("production_schedule_users").select("id,display_name,role,permissions,active").eq("id",sessionUser.id).single();if(error)throw new Error("Brak profilu użytkownika. Administrator musi go aktywować.");if(!loaded.active)throw new Error("Konto jest nieaktywne.");profile=loaded;applyPermissions();if(profile.role==="Administrator")await loadManagedUsers()}
 async function login(){let email=el("loginEmail").value.trim(),password=el("loginPin").value;if(!email||!password)return el("loginError").textContent="Podaj login i PIN.";el("loginError").textContent="Logowanie…";try{if(!SUPABASE_ANON_KEY)throw new Error("Brak publicznego klucza Supabase w konfiguracji.");if(!supabaseClient)supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);let {data:auth,error}=await supabaseClient.auth.signInWithPassword({email,password});if(error)throw error;sessionUser=auth.user;await loadProfile();el("loginScreen").classList.add("hidden");await fetchCloudData();el("loginPin").value=""}catch(error){profile=null;el("loginError").textContent=error.message||"Nie udało się zalogować."}}
-async function logout(){if(supabaseClient)await supabaseClient.auth.signOut();profile=null;sessionUser=null;profiles=[];el("loginScreen").classList.remove("hidden");applyPermissions()}
+async function logout(){if(supabaseClient)await supabaseClient.auth.signOut();profile=null;sessionUser=null;profiles=[];umSel=null;umDraft=null;el("usersModal").classList.add("hidden");document.body.style.overflow="";el("loginScreen").classList.remove("hidden");applyPermissions()}
 async function restoreSession(){if(!SUPABASE_ANON_KEY){el("loginError").textContent="Brak konfiguracji Supabase. Dodaj publiczny ANON_KEY zgodnie z README.";return}supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);let {data:{user}}=await supabaseClient.auth.getUser();if(!user)return;try{sessionUser=user;await loadProfile();el("loginScreen").classList.add("hidden");await fetchCloudData()}catch(error){el("loginError").textContent=error.message||"Nie udało się przywrócić sesji."}}
-async function loadManagedUsers(){let {data:loaded,error}=await supabaseClient.from("production_schedule_users").select("id,display_name,role,permissions,active").order("display_name");if(error)return alert("Nie udało się pobrać użytkowników: "+error.message);profiles=loaded||[];el("managedUser").innerHTML=profiles.map(item=>`<option value="${esc(item.id)}">${esc(item.display_name||item.id)} · ${esc(item.role)}</option>`).join("");showManagedUser()}
-function showManagedUser(){let selected=profiles.find(item=>item.id===el("managedUser").value);if(!selected)return;el("managedName").value=selected.display_name||"";el("managedRole").value=selected.role;el("managedActive").checked=!!selected.active;document.querySelectorAll("#adminPanel input[type=checkbox]").forEach(box=>box.checked=selected.role==="Administrator"||(selected.permissions||[]).includes(box.value))}
-async function saveManagedUser(){if(!requirePermission("manage_users"))return;let id=el("managedUser").value,permissions=Array.from(document.querySelectorAll("#adminPanel input[type=checkbox]:checked"),box=>box.value);let {error}=await supabaseClient.from("production_schedule_users").update({display_name:el("managedName").value.trim(),role:el("managedRole").value,permissions,active:el("managedActive").checked}).eq("id",id);if(error)return alert("Nie zapisano uprawnień: "+error.message);await loadManagedUsers();alert("Uprawnienia zapisane.")}
+// ===== Panel użytkowników =====
+const USERS_TABLE = "production_schedule_users";
+const PERMS = [
+  {key:"edit_plan",     name:"Edycja planu",   desc:"Dodawanie i zmiana przypisań, import JSON"},
+  {key:"manage_people", name:"Pracownicy",     desc:"Dodawanie pracowników do planu"},
+  {key:"export_pdf",    name:"Pobieranie PDF", desc:"Generowanie wydruku harmonogramu"}
+];
+// Domyślne uprawnienia po wyborze roli (można je potem zmienić ręcznie).
+const ROLES = {
+  "Administrator": {desc:"Pełny dostęp, zarządza użytkownikami", perms:PERMS.map(p=>p.key)},
+  "Właściciel":    {desc:"Edytuje plan i pracowników",           perms:["edit_plan","manage_people","export_pdf"]},
+  "Pracownik":     {desc:"Podstawowy dostęp",                    perms:["export_pdf"]}
+};
+let umSel = null, umDraft = null, toastTimer = null, umEmails = {}, umFn = false;
+async function adminCall(body){
+  try{
+    let {data,error}=await supabaseClient.functions.invoke("admin-users",{body});
+    if(error){let msg=error.message;try{let j=await error.context.json();if(j&&j.error)msg=j.error}catch(_){}
+      return {error:msg,missing:error.name==="FunctionsFetchError"||(error.context&&error.context.status===404)}}
+    if(data&&data.error)return {error:data.error};
+    return {data};
+  }catch(e){return {error:e.message,missing:true}}
+}
+async function loadEmails(){let r=await adminCall({action:"list_emails"});umFn=!r.error;umEmails=(r.data&&r.data.emails)||{}}
+
+function toast(msg, type){let t=el("toast");t.textContent=msg;t.className="toast show"+(type==="err"?" err":"");clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove("show"),3200)}
+function initials(n){return (n||"?").trim().split(/\s+/).slice(0,2).map(s=>s[0]).join("").toUpperCase()||"?"}
+function draftFrom(p){return {name:p.display_name||"",role:p.role,active:!!p.active,perms:new Set(p.role==="Administrator"?ROLES.Administrator.perms:(p.permissions||[]))}}
+function permsOf(d){return d.role==="Administrator"?ROLES.Administrator.perms:PERMS.map(p=>p.key).filter(k=>d.perms.has(k))}
+function umDirty(){
+  if(!umDraft)return false;
+  if(umSel==="new")return true;
+  let s=profiles.find(p=>p.id===umSel);if(!s)return false;
+  let o=draftFrom(s);
+  return o.name.trim()!==umDraft.name.trim()||o.role!==umDraft.role||o.active!==umDraft.active||permsOf(o).join()!==permsOf(umDraft).join();
+}
+function umConfirmLeave(){return !umDirty()||confirm("Masz niezapisane zmiany. Odrzucić je?")}
+
+async function loadManagedUsers(){
+  let {data:loaded,error}=await supabaseClient.from(USERS_TABLE).select("id,display_name,role,permissions,active").order("display_name");
+  if(error)return toast("Nie udało się pobrać użytkowników: "+error.message,"err");
+  profiles=loaded||[];
+  if(!el("usersModal").classList.contains("hidden")){renderUserList();if(umSel&&umSel!=="new")selectUser(umSel,true)}
+}
+function openUsers(){
+  el("usersModal").classList.remove("hidden");document.body.style.overflow="hidden";
+  renderUserList();
+  if(!umSel)selectUser(profiles.some(p=>p.id===profile.id)?profile.id:(profiles[0]&&profiles[0].id));
+  else renderUserForm();
+  loadEmails().then(()=>{if(!umDirty())renderUserForm()});
+}
+function closeUsers(){
+  if(!umConfirmLeave())return;
+  el("usersModal").classList.add("hidden");document.body.style.overflow="";
+}
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!el("usersModal").classList.contains("hidden"))closeUsers()});
+
+function renderUserList(){
+  let q=el("umSearch").value.trim().toLowerCase();
+  let list=profiles.filter(p=>!q||(p.display_name||"").toLowerCase().includes(q)||p.role.toLowerCase().includes(q));
+  el("umItems").innerHTML=list.length?list.map(p=>`<button class="um-item${p.id===umSel?" on":""}${p.active?"":" off"}" onclick="selectUser('${esc(p.id)}')"><span class="um-av">${esc(initials(p.display_name))}</span><span class="um-meta"><b>${esc(p.display_name||"Bez nazwy")}</b><span><span class="um-chip${p.role==="Administrator"?" admin":""}">${esc(p.role)}</span>${p.active?"":' <span class="um-chip inactive">nieaktywny</span>'}</span></span></button>`).join(""):'<div class="um-empty">Brak wyników</div>';
+}
+function selectUser(id,force){
+  if(!force&&id!==umSel&&!umConfirmLeave())return;
+  let p=profiles.find(x=>x.id===id);if(!p){umSel=null;umDraft=null;renderUserForm();return}
+  umSel=id;umDraft=draftFrom(p);renderUserList();renderUserForm();
+}
+function newUserForm(){
+  if(!umConfirmLeave())return;
+  umSel="new";umDraft={name:"",role:"Pracownik",active:true,perms:new Set(ROLES["Pracownik"].perms)};
+  renderUserList();renderUserForm();el("umEmail")&&el("umEmail").focus();
+}
+function resetUserForm(){if(umSel==="new")return selectUser(profile.id,true);selectUser(umSel,true)}
+
+function renderUserForm(){
+  let box=el("umForm");
+  if(!umDraft){box.innerHTML='<div class="um-empty">Wybierz użytkownika z listy.</div>';updateUserState();return}
+  let d=umDraft,isNew=umSel==="new",self=!isNew&&umSel===profile.id,admin=d.role==="Administrator";
+  let email=umEmails[umSel]||"",creds=isNew?"":`<div class="um-sep"></div><label>Login / e-mail</label><input id="umLogin" type="email" autocomplete="off" value="${esc(email)}" placeholder="${umFn?"brak e-maila":"wczytywanie…"}"><label>Nowy PIN</label><input id="umNewPin" type="password" autocomplete="new-password" placeholder="min. 6 znaków — puste = bez zmiany"><div style="margin-top:10px"><button class="um-ghost" onclick="saveCredentials()">Zmień login / PIN</button></div><p class="um-hint">${umFn?"Zmiana loginu i PIN-u zapisuje się osobno od przycisku „Zapisz zmiany”. Nazwę wyświetlaną zmienisz wyżej.":"Funkcja serwerowa „admin-users” nie jest dostępna — zmiana loginu i PIN-u innych osób nie zadziała, dopóki jej nie wdrożysz."}</p>`;
+  box.innerHTML=`
+    <div class="um-title"><span class="um-av">${esc(initials(d.name))}</span><span>${isNew?"Nowy użytkownik":esc(d.name||"Bez nazwy")}</span>${self?'<span class="um-chip">to Ty</span>':""}</div>
+    ${isNew?`<div class="um-grid"><label>E-mail / login<input id="umEmail" type="email" autocomplete="off" placeholder="np. jan@firma.pl"></label><label>PIN / hasło<input id="umPin" type="password" autocomplete="new-password" placeholder="min. 6 znaków"></label></div>
+    <details class="um-details"><summary>Konto już istnieje w Supabase (Auth)?</summary><label>ID konta (UUID)<input id="umUuid" placeholder="wklej, aby dodać tylko profil"></label><p class="um-hint">Jeśli wypełnisz to pole, nie zostanie utworzone nowe konto — profil zostanie przypisany do istniejącego. Przydatne, gdy użytkownik ma już login z innej aplikacji.</p></details>`:""}
+    <label>Nazwa wyświetlana<input id="umName" value="${esc(d.name)}" oninput="umSet('name',this.value)"></label>
+    <label>Rola</label>
+    <div class="um-roles">${Object.entries(ROLES).map(([r,v])=>{let dis=self&&r!=="Administrator";return `<label class="um-role${d.role===r?" on":""}${dis?" dis":""}"><input type="radio" name="umRole" ${d.role===r?"checked":""} ${dis?"disabled":""} onchange="umSetRole('${r}')"><b>${r}</b><small>${v.desc}</small></label>`}).join("")}</div>
+    ${self?'<p class="um-hint">Nie możesz zmienić własnej roli ani dezaktywować własnego konta.</p>':""}
+    <label>Uprawnienia</label>
+    <div class="um-perms">${PERMS.map(p=>`<label class="checkbox um-perm"><input type="checkbox" ${(admin||d.perms.has(p.key))?"checked":""} ${admin?"disabled":""} onchange="umTogglePerm('${p.key}',this.checked)"><span><b>${p.name}</b><small>${p.desc}</small></span></label>`).join("")}</div>
+    <p class="um-hint">${admin?"Administrator ma wszystkie uprawnienia.":"Zmiana roli ustawia domyślny zestaw uprawnień — możesz go potem dostosować."}</p>
+    <label class="checkbox um-active"><input type="checkbox" ${d.active?"checked":""} ${self?"disabled":""} onchange="umSet('active',this.checked)"><span><b>Konto aktywne</b><small>Nieaktywny użytkownik nie zaloguje się do planu.</small></span></label>${creds}`;
+  updateUserState();
+}
+function umSet(k,v){umDraft[k]=v;if(k==="name"){let t=document.querySelector("#umForm .um-title span:nth-child(2)");if(t&&umSel!=="new")t.textContent=v||"Bez nazwy";let av=document.querySelector("#umForm .um-title .um-av");if(av)av.textContent=initials(v)}updateUserState()}
+function umSetRole(r){umDraft.role=r;umDraft.perms=new Set(ROLES[r].perms);renderUserForm()}
+function umTogglePerm(k,on){on?umDraft.perms.add(k):umDraft.perms.delete(k);updateUserState()}
+function updateUserState(){
+  let dirty=umDirty(),isNew=umSel==="new";
+  el("umState").textContent=!umDraft?"":isNew?"Nowy użytkownik — uzupełnij dane":dirty?"● Niezapisane zmiany":"Wszystko zapisane";
+  el("umState").className="um-state"+(dirty?" dirty":"");
+  el("umSave").disabled=!umDraft||!dirty;el("umSave").textContent=isNew?"Utwórz użytkownika":"Zapisz zmiany";
+  el("umReset").disabled=!umDraft||(!dirty&&!isNew);el("umReset").textContent=isNew?"Anuluj":"Cofnij zmiany";
+}
+
+async function saveCredentials(){
+  if(!requirePermission("manage_users")||!umSel||umSel==="new")return;
+  let email=el("umLogin").value.trim(),pin=el("umNewPin").value,cur=umEmails[umSel]||"",body={action:"update",id:umSel};
+  if(email&&email!==cur)body.email=email;
+  if(pin){if(pin.length<6)return toast("PIN musi mieć min. 6 znaków.","err");body.password=pin}
+  if(!body.email&&!body.password)return toast("Nic do zmiany.","err");
+  if(body.password&&!confirm("Ustawić nowy PIN dla tego użytkownika?"))return;
+  let r=await adminCall(body);
+  if(r.error&&r.missing&&umSel===profile.id&&body.password&&!body.email){
+    let {error}=await supabaseClient.auth.updateUser({password:body.password});r=error?{error:error.message}:{data:{ok:true}};
+  }
+  if(r.error)return toast("Nie zapisano: "+(r.missing?"funkcja „admin-users” nie jest wdrożona.":r.error),"err");
+  if(body.email)umEmails[umSel]=body.email;
+  el("umNewPin").value="";toast(body.password&&body.email?"Login i PIN zmienione.":body.password?"PIN zmieniony.":"Login zmieniony.");
+}
+async function saveUser(){
+  if(!requirePermission("manage_users")||!umDraft)return;
+  let d=umDraft,isNew=umSel==="new",name=d.name.trim(),permissions=permsOf(d);
+  if(!name)return toast("Podaj nazwę wyświetlaną.","err");
+  if(!isNew){
+    // zabezpieczenie przed odcięciem wszystkich administratorów
+    let cur=profiles.find(p=>p.id===umSel);
+    if(cur&&cur.role==="Administrator"&&cur.active&&(d.role!=="Administrator"||!d.active)&&!profiles.some(p=>p.id!==umSel&&p.role==="Administrator"&&p.active))
+      return toast("Musi pozostać co najmniej jeden aktywny administrator.","err");
+  }
+  let btn=el("umSave");btn.disabled=true;btn.textContent="Zapisywanie…";
+  try{
+    if(isNew){
+      let id=(el("umUuid")&&el("umUuid").value.trim())||"";
+      if(!id){
+        let email=el("umEmail").value.trim(),pin=el("umPin").value;
+        if(!email)throw new Error("Podaj e-mail / login.");
+        if(pin.length<6)throw new Error("PIN / hasło musi mieć min. 6 znaków.");
+        // osobny klient bez zapisu sesji, żeby nie wylogować administratora
+        let cr=await adminCall({action:"create",email,password:pin});
+        if(!cr.error)id=cr.data.id;
+        else if(!cr.missing)throw new Error(cr.error);
+        else{
+        let tmp=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
+        let {data:r,error:e}=await tmp.auth.signUp({email,password:pin});
+        if(e)throw e;
+        if(!r.user||(r.user.identities&&!r.user.identities.length))throw new Error("Konto o tym e-mailu już istnieje — wklej jego ID (UUID) w sekcji „Konto już istnieje”.");
+        id=r.user.id;
+        }
+      }
+      let {data:ins,error}=await supabaseClient.from(USERS_TABLE).insert({id,display_name:name,role:d.role,permissions,active:d.active}).select();
+      if(error)throw error;
+      if(!ins||!ins.length)throw new Error("Baza nie zapisała profilu (sprawdź polityki RLS).");
+      await loadManagedUsers();selectUser(id,true);toast("Użytkownik utworzony.");
+    }else{
+      let {data:upd,error}=await supabaseClient.from(USERS_TABLE).update({display_name:name,role:d.role,permissions,active:d.active}).eq("id",umSel).select();
+      if(error)throw error;
+      if(!upd||!upd.length)throw new Error("Baza nie zapisała zmian (sprawdź polityki RLS).");
+      if(umSel===profile.id){profile={...profile,...upd[0]};applyPermissions()}
+      await loadManagedUsers();selectUser(umSel,true);toast("Zmiany zapisane.");
+    }
+  }catch(err){toast("Nie zapisano: "+(err.message||err),"err");updateUserState()}
+}
 
 function monday(d = new Date()){
   let date = new Date(d), n = (date.getDay()+6)%7;

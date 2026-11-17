@@ -496,6 +496,19 @@ button,.file{
   .um-roles,.um-grid{grid-template-columns:1fr}
   .um-foot{flex-direction:column;align-items:stretch}.um-foot .um-btns button{flex:1}
 }
+
+/* ===== Przeciąganie zadań ===== */
+.task{position:relative}
+.task.has-drag{padding-right:34px}
+.drag-handle{position:absolute;top:2px;right:4px;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;font-size:1.25rem;line-height:1;color:#7a8ca3;padding:4px 6px}
+.drag-handle:hover{color:var(--navy)}
+.task.dragging{opacity:.3}
+.shift.drop-target{outline:2px dashed var(--navy);outline-offset:-3px;background:#eef4fb}
+.drag-ghost{position:fixed;z-index:60;pointer-events:none;opacity:.94;box-shadow:0 10px 30px #0b2a4c55;margin:0}
+body.is-dragging{user-select:none;-webkit-user-select:none;cursor:grabbing}
+.undo-toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:70;background:#0b2a4c;color:#fff;padding:10px 14px;border-radius:9px;box-shadow:0 8px 26px #0006;font-size:.86rem;display:flex;gap:12px;align-items:center;max-width:min(560px,92vw)}
+.undo-toast button{background:#fff;color:#0b2a4c;border:0;border-radius:6px;padding:5px 10px;font-weight:700;cursor:pointer}
+@media print{.drag-handle,.undo-toast{display:none!important}.task.has-drag{padding-right:8px}}
 </style>
 </head>
 <body>
@@ -871,9 +884,9 @@ function render(){
     let daily = items.filter(a => a.date == iso(d));
     let blocks = ["1","2"].map(s => {
       let t = daily.filter(a => a.shift == s).map(a => 
-        "<div class='task'><b>" + esc(a.employee) + " · " + esc(a.task) + "</b><small>" + esc(a.order || "bez zlecenia") + (a.notes ? " · " + esc(a.notes) : "") + "</small><button class='mini' onclick=\"editTask('" + a.id + "')\">Edytuj</button><button class='mini' onclick=\"removeTask('" + a.id + "')\">Usuń</button></div>"
+        "<div class='task" + (can("edit_plan") ? " has-drag" : "") + "'>" + (can("edit_plan") ? "<span class='drag-handle' title='Przeciągnij na inny dzień lub zmianę' onpointerdown=\"dragStart(event,'" + a.id + "')\">⠿</span>" : "") + "<b>" + esc(a.employee) + " · " + esc(a.task) + "</b><small>" + esc(a.order || "bez zlecenia") + (a.notes ? " · " + esc(a.notes) : "") + "</small><button class='mini' onclick=\"editTask('" + a.id + "')\">Edytuj</button><button class='mini' onclick=\"removeTask('" + a.id + "')\">Usuń</button></div>"
       ).join("") || "<div class='empty'>Brak zadań</div>";
-      return "<div class='shift'><h4>ZMIANA " + s + " · " + (s == "1" ? "06:00–14:00" : "14:00–22:00") + "</h4>" + t + "</div>";
+      return "<div class='shift' data-date='" + iso(d) + "' data-shift='" + s + "'><h4>ZMIANA " + s + " · " + (s == "1" ? "06:00–14:00" : "14:00–22:00") + "</h4>" + t + "</div>";
     }).join("");
     return "<article class='day " + (iso(d) == selected ? "selected-day" : "") + "'><div class='day-name'>" + D[i] + "<small>" + d.toLocaleDateString("pl-PL",{day:"2-digit",month:"2-digit",year:"numeric"}) + "</small></div>" + blocks + "</article>";
   }).join("");
@@ -888,6 +901,64 @@ function startPage(){commands=[];rect(50,495,742,68,.07,.23,.41);text(66,545,8,"
 function flush(){commands.push("0.79 0.85 0.91 RG 0.6 w 50 26 m 792 26 l S");text(50,14,7,"Kalkulator produkcji / Harmonogram operacyjny",false,"0.38 0.45 0.55");text(740,14,7,"Strona "+(pages.length+1),false,"0.38 0.45 0.55");pages.push(commands.join("\n"))}
 function cellTasks(list,x,top,width){if(!list.length){text(x+10,top-20,9,"-",false,"0.38 0.45 0.55");return}let cursor=top-16;list.forEach(a=>{let first=pdfWrap(a.employee+" - "+a.task,42);first.forEach(l=>{text(x+10,cursor,8.5,l,l==first[0]);cursor-=10});let detail=(a.order||"bez zlecenia")+(a.notes?" / "+a.notes:"");pdfWrap(detail,48).forEach(l=>{text(x+10,cursor,7.2,l,false,"0.38 0.45 0.55");cursor-=9});cursor-=5})}
 startPage();printedDays.forEach((d,index)=>{let daily=shown.filter(a=>a.date==iso(d)),s1=daily.filter(a=>a.shift=="1"),s2=daily.filter(a=>a.shift=="2"),lines=Math.max(2,s1.length*3,s2.length*3),height=Math.max(48,lines*12+14);if(y-height<42){flush();startPage()}rect(50,y-height,110,height,.88,.93,.98);rect(160,y-height,316,height,.98,.99,1);rect(476,y-height,316,height,.98,.99,1);line(50,y-height,792,y-height);line(160,y-height,160,y);line(476,y-height,476,y);text(62,y-21,11,D[index].toUpperCase(),true);text(62,y-35,8,d.toLocaleDateString("pl-PL"),true);cellTasks(s1,160,y,316);cellTasks(s2,476,y,316);y-=height});flush();let blob=new Blob([pdfSource(pages)],{type:"application/pdf"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=(scope=="day"?"harmonogram_dzien_":"harmonogram_tydzien_")+(scope=="day"?chosen:iso(printedDays[0]))+".pdf";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
+// ---- Przeciąganie zadań między dniami i zmianami (mysz i dotyk). Chwyć ⠿ przy zadaniu i upuść na wybraną zmianę; po przeniesieniu można cofnąć.
+let drag = null, undoTimer = null;
+function dragStart(ev, id) {
+  if((ev.button !== undefined && ev.button !== 0) || drag || !can("edit_plan")) return;
+  const handle = ev.currentTarget, card = handle.closest(".task"), a = data.assignments.find(x => x.id === id);
+  if(!card || !a) return;
+  ev.preventDefault();
+  const r = card.getBoundingClientRect(), ghost = card.cloneNode(true);
+  ghost.classList.remove("dragging"); ghost.classList.add("drag-ghost"); ghost.style.width = r.width + "px";
+  document.body.appendChild(ghost);
+  card.classList.add("dragging"); document.body.classList.add("is-dragging");
+  drag = { id, from: a.date, fromShift: a.shift, card, ghost, dx: ev.clientX - r.left, dy: ev.clientY - r.top, over: null, x: ev.clientX, y: ev.clientY, pid: ev.pointerId };
+  try { handle.setPointerCapture(ev.pointerId); } catch(e) {}
+  drag.scroller = setInterval(() => { if(!drag) return; if(drag.y < 80) window.scrollBy(0, -20); else if(drag.y > window.innerHeight - 80) window.scrollBy(0, 20); dragHover(); }, 30);
+  document.addEventListener("pointermove", dragMove);
+  document.addEventListener("pointerup", dragUp);
+  document.addEventListener("pointercancel", dragCancel);
+  document.addEventListener("keydown", dragKey);
+  dragMove(ev);
+}
+function dragHover() {
+  if(!drag) return;
+  const under = document.elementFromPoint(drag.x, drag.y), box = under ? under.closest(".shift") : null;
+  if(box !== drag.over) { if(drag.over) drag.over.classList.remove("drop-target"); if(box) box.classList.add("drop-target"); drag.over = box; }
+}
+function dragMove(ev) {
+  if(!drag || (ev.pointerId !== undefined && ev.pointerId !== drag.pid)) return;
+  drag.x = ev.clientX; drag.y = ev.clientY;
+  drag.ghost.style.left = (ev.clientX - drag.dx) + "px"; drag.ghost.style.top = (ev.clientY - drag.dy) + "px";
+  dragHover();
+}
+function dragFinish(apply) {
+  if(!drag) return;
+  const d = drag; drag = null;
+  clearInterval(d.scroller);
+  document.removeEventListener("pointermove", dragMove); document.removeEventListener("pointerup", dragUp);
+  document.removeEventListener("pointercancel", dragCancel); document.removeEventListener("keydown", dragKey);
+  d.ghost.remove(); d.card.classList.remove("dragging"); document.body.classList.remove("is-dragging");
+  if(d.over) d.over.classList.remove("drop-target");
+  if(apply && d.over && d.over.dataset.date && (d.over.dataset.date !== d.from || d.over.dataset.shift !== d.fromShift)) moveTask(d.id, d.over.dataset.date, d.over.dataset.shift);
+}
+function dragUp(ev) { if(drag && ev.pointerId === drag.pid) dragFinish(true); }
+function dragCancel() { dragFinish(false); }
+function dragKey(ev) { if(ev.key === "Escape") dragFinish(false); }
+function moveTask(id, date, shift) {
+  if(!requirePermission("edit_plan")) return;
+  const a = data.assignments.find(x => x.id === id);
+  if(!a || (a.date === date && a.shift === shift)) return;
+  const from = a.date, fromShift = a.shift; a.date = date; a.shift = shift;
+  saveCloudData(); render();
+  const fmt = (d, s) => new Date(d + "T00:00:00").toLocaleDateString("pl-PL") + " (zm. " + s + ")", t = el("undoToast");
+  t.innerHTML = ""; const span = document.createElement("span"), btn = document.createElement("button");
+  span.textContent = "Przeniesiono „" + (a.task.length > 40 ? a.task.slice(0, 40) + "…" : a.task) + "” z " + fmt(from, fromShift) + " na " + fmt(date, shift);
+  btn.textContent = "Cofnij"; btn.onclick = () => { t.classList.add("hidden"); moveTask(id, from, fromShift); };
+  t.append(span, btn); t.classList.remove("hidden");
+  clearTimeout(undoTimer); undoTimer = setTimeout(() => t.classList.add("hidden"), 10000);
+}
+
 function exportData(){let a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:"application/json"}));a.download="plan_produkcji.json";a.click()}
 function importData(e){if(!requirePermission("edit_plan"))return;let r=new FileReader();r.onload=()=>{try{let x=JSON.parse(r.result);if(!Array.isArray(x.employees)||!Array.isArray(x.assignments))throw 0;data=x;saveCloudData();renderPeople();render()}catch(_){alert("Nieprawidłowy plik.")}};if(e.target.files[0])r.readAsText(e.target.files[0])}
 function clearData(){if(!profile||profile.role!=="Administrator")return alert("Tylko Administrator może wyczyścić plan.");if(confirm("Wyczyścić cały plan?")){data={format:"plan-produkcji-html-v1",employees:[],assignments:[],lastModified:"Wyczyszczono"};saveCloudData();renderPeople();render()}}
@@ -896,4 +967,5 @@ if(!el("week").value) {
   el("week").value = iso(monday());
 }
 restoreSession();
-</script></body></html>
+</script><div id="undoToast" class="undo-toast hidden"></div>
+</body></html>

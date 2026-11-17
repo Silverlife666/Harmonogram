@@ -509,6 +509,14 @@ body.is-dragging{user-select:none;-webkit-user-select:none;cursor:grabbing}
 .undo-toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:70;background:#0b2a4c;color:#fff;padding:10px 14px;border-radius:9px;box-shadow:0 8px 26px #0006;font-size:.86rem;display:flex;gap:12px;align-items:center;max-width:min(560px,92vw)}
 .undo-toast button{background:#fff;color:#0b2a4c;border:0;border-radius:6px;padding:5px 10px;font-weight:700;cursor:pointer}
 @media print{.drag-handle,.undo-toast{display:none!important}.task.has-drag{padding-right:8px}}
+
+/* ===== Osoby: zmiana nazwy / usuwanie ===== */
+.chip{display:inline-flex;align-items:center;gap:1px}
+.chip-btn{background:transparent;color:#61748a;border:0;padding:0 4px;margin:0;font-size:.9rem;line-height:1;font-weight:700;cursor:pointer;border-radius:4px}
+.chip-btn:first-of-type{margin-left:4px}
+.chip-btn:hover{color:var(--navy);background:var(--pale)}
+.chip-btn.del:hover{color:#ae3d3d}
+@media print{.chip-btn{display:none!important}}
 </style>
 </head>
 <body>
@@ -724,7 +732,7 @@ function days(){
 
 function updateLastChangeDisplay() {
   if(data.lastModified && data.lastModified !== "—") {
-    el("lastChangeInfo").textContent = "Ostatnia zmiana: " + data.lastModified;
+    el("lastChangeInfo").textContent = "Ostatnia zmiana: " + data.lastModified + (data.lastModifiedBy ? " · " + data.lastModifiedBy : "");
   } else {
     el("lastChangeInfo").textContent = "Ostatnia zmiana: —";
   }
@@ -736,7 +744,7 @@ async function fetchCloudData(showAlert = false) {
     let { data: row, error } = await supabaseClient.from("production_schedule_state").select("payload").eq("id", 1).maybeSingle();
     if(error) throw error;
     if(row && row.payload && Array.isArray(row.payload.assignments)) data = row.payload;
-    if(!data.lastModified) data.lastModified = "—";
+    if(!data.lastModified) data.lastModified = "—"; baseData = clone(data);
     if(showAlert) alert("Pomyślnie pobrano najnowsze dane z Supabase.");
   } catch(e) {
     el("syncStatus").textContent = "Błąd Supabase: " + (e.message || "brak połączenia");
@@ -755,21 +763,181 @@ async function fetchCloudData(showAlert = false) {
   el("syncStatus").textContent = "Status: Gotowy";
 }
 
+// ===== Synchronizacja: łączenie zmian, odświeżanie, bezpieczeństwo danych =====
+const STATE_TABLE = "production_schedule_state", SAVE_RPC = "save_production_schedule";
+let baseData = null, saving = false, saveAgain = false, forceSave = false, saveFailed = false;
+const clone = o => JSON.parse(JSON.stringify(o));
+const META_KEYS = ["lastModified", "lastModifiedBy"];
+function canon(v) {
+  if(Array.isArray(v)) return "[" + v.map(canon).join(",") + "]";
+  if(v && typeof v === "object") return "{" + Object.keys(v).filter(k => v[k] !== undefined).sort().map(k => JSON.stringify(k) + ":" + canon(v[k])).join(",") + "}";
+  return JSON.stringify(v);
+}
+function contentOf(d) { const c = Object.assign({}, d); META_KEYS.forEach(k => delete c[k]); return canon(c); }
+
+// Trójstronne łączenie: base = stan z ostatniej synchronizacji, local = to, co ma ta przeglądarka, remote = aktualny stan w chmurze.
+// Zmiany lokalne (dodane / zmienione / usunięte zadania i osoby) są nakładane na wersję z chmury, więc nie kasują pracy innych.
+function mergeData(base, local, remote) {
+  const out = clone(remote); let conflicts = 0;
+  const B = new Map((base.assignments || []).map(a => [a.id, a])), Lm = new Map((local.assignments || []).map(a => [a.id, a]));
+  const R = Array.isArray(out.assignments) ? out.assignments : [], rIdx = new Map(R.map((a, i) => [a.id, i]));
+  Lm.forEach((a, id) => {
+    if(!B.has(id)) { if(rIdx.has(id)) R[rIdx.get(id)] = clone(a); else R.push(clone(a)); }
+    else if(canon(a) !== canon(B.get(id))) {
+      if(rIdx.has(id)) { if(canon(R[rIdx.get(id)]) !== canon(B.get(id))) conflicts++; R[rIdx.get(id)] = clone(a); }
+      else R.push(clone(a));
+    }
+  });
+  const removed = new Set(); B.forEach((a, id) => { if(!Lm.has(id)) removed.add(id); });
+  out.assignments = R.filter(a => !removed.has(a.id));
+  const bE = new Set(base.employees || []), lE = new Set(local.employees || []);
+  const emp = new Set((out.employees || []).concat([...lE].filter(x => !bE.has(x))));
+  [...bE].filter(x => !lE.has(x)).forEach(x => emp.delete(x));
+  out.assignments.forEach(a => { if(a.employee) emp.add(a.employee); });
+  out.employees = [...emp];
+  Object.keys(local).forEach(k => {
+    if(k === "assignments" || k === "employees" || META_KEYS.includes(k)) return;
+    const lv = local[k], bv = base[k];
+    if(canon(lv) === canon(bv)) return;
+    if(lv && typeof lv === "object" && !Array.isArray(lv)) {
+      if(!out[k] || typeof out[k] !== "object" || Array.isArray(out[k])) out[k] = {};
+      Object.keys(lv).forEach(p => { if(canon(lv[p]) !== canon((bv || {})[p])) out[k][p] = lv[p]; });
+      Object.keys(bv || {}).forEach(p => { if(!(p in lv)) delete out[k][p]; });
+    } else out[k] = lv;
+  });
+  META_KEYS.forEach(k => { if(local[k] !== undefined) out[k] = local[k]; });
+  return { merged: out, conflicts };
+}
+
+// Zapisy są kolejkowane: kolejny zapis startuje dopiero po zakończeniu poprzedniego i zawsze widzi najnowszy stan z chmury.
 async function saveCloudData() {
   if(!can("edit_plan")) return alert("Nie masz uprawnienia do edycji planu.");
-  let now = new Date();
-  data.lastModified = String(now.getHours()).padStart(2,"0") + ":" + String(now.getMinutes()).padStart(2,"0") + " (" + String(now.getDate()).padStart(2,"0") + "." + String(now.getMonth()+1).padStart(2,"0") + ")";
-
+  if(saving) { saveAgain = true; return; }
+  saving = true;
+  try { do { saveAgain = false; await doSave(); } while(saveAgain); }
+  finally { saving = false; }
+}
+async function doSave() {
+  const now = new Date(), p2 = n => String(n).padStart(2, "0");
+  data.lastModified = p2(now.getHours()) + ":" + p2(now.getMinutes()) + " (" + p2(now.getDate()) + "." + p2(now.getMonth() + 1) + ")";
+  data.lastModifiedBy = (profile && (profile.display_name || (sessionUser && sessionUser.email))) || "";
   updateLastChangeDisplay();
   el("syncStatus").textContent = "Status: Zapisywanie w chmurze...";
-  
+  const force = forceSave; forceSave = false;
+  let note = "";
   try {
-    let { error } = await supabaseClient.rpc("save_production_schedule", { next_payload: data });
+    if(!force && baseData) {
+      const { data: row, error: e1 } = await supabaseClient.from(STATE_TABLE).select("payload").eq("id", 1).maybeSingle();
+      if(e1) throw e1;
+      const remote = row && row.payload;
+      if(remote && Array.isArray(remote.assignments) && contentOf(remote) !== contentOf(baseData)) {
+        const r = mergeData(baseData, data, remote); data = r.merged;
+        note = "Połączono Twoje zmiany ze zmianami " + (remote.lastModifiedBy || "innej osoby") + "." + (r.conflicts ? " Zadań edytowanych jednocześnie: " + r.conflicts + " — zostały Twoje wersje." : "");
+      }
+    }
+    const { error } = await supabaseClient.rpc(SAVE_RPC, { next_payload: data });
     if(error) throw error;
+    baseData = clone(data); saveFailed = false;
     el("syncStatus").textContent = "Status: Zapisano w Supabase.";
+    if(note) { renderPeople(); render(); updateLastChangeDisplay(); toast(note); }
   } catch(e) {
-    el("syncStatus").textContent = "Nie zapisano: " + (e.message || "Supabase jest niedostępny");
+    const first = !saveFailed; saveFailed = true;
+    el("syncStatus").textContent = "Nie zapisano: " + (e.message || "Supabase jest niedostępny") + " — ponowię próbę.";
+    if(first) toast("Nie zapisano zmian — ponowię próbę. Nie zamykaj karty.", "err");
+    setTimeout(() => { if(saveFailed && !saving) saveCloudData(); }, 15000);
   }
+}
+window.addEventListener("beforeunload", e => { if(saving || saveFailed) { e.preventDefault(); e.returnValue = ""; } });
+
+// Automatyczne odświeżanie: co minutę i po powrocie do karty. Pomijane, gdy są własne niezapisane zmiany albo trwa przeciąganie.
+async function refreshFromCloud() {
+  if(!supabaseClient || !profile || !baseData || saving || saveFailed || document.hidden || (typeof drag !== "undefined" && drag)) return;
+  try {
+    const { data: row, error } = await supabaseClient.from(STATE_TABLE).select("payload").eq("id", 1).maybeSingle();
+    if(error || !row || !row.payload || !Array.isArray(row.payload.assignments)) return;
+    const remote = row.payload;
+    if(contentOf(remote) === contentOf(baseData)) return;
+    if(contentOf(data) !== contentOf(baseData)) return;
+    data = remote; if(!data.lastModified) data.lastModified = "—"; baseData = clone(data);
+    renderPeople(); render(); updateLastChangeDisplay();
+    toast("Plan zaktualizowany" + (remote.lastModifiedBy ? " — zmiana: " + remote.lastModifiedBy : "") + ".");
+  } catch(_) {}
+}
+setInterval(refreshFromCloud, 60000);
+document.addEventListener("visibilitychange", () => { if(!document.hidden) refreshFromCloud(); });
+
+// Kopia zapasowa i cofanie operacji, które zmieniają dużo naraz (import, czyszczenie, usunięcie osoby).
+function downloadBackup(label) {
+  try {
+    const t = new Date(), p2 = n => String(n).padStart(2, "0"), a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: "application/json" }));
+    a.download = "kopia_" + label + "_" + iso(t) + "_" + p2(t.getHours()) + p2(t.getMinutes()) + ".json";
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 3000);
+  } catch(_) {}
+}
+function offerUndo(message, previous) {
+  const t = el("undoToast"), span = document.createElement("span"), btn = document.createElement("button");
+  t.innerHTML = ""; span.textContent = message; btn.textContent = "Cofnij";
+  btn.onclick = () => { t.classList.add("hidden"); data = clone(previous); saveCloudData(); renderPeople(); render(); toast("Przywrócono poprzedni stan."); };
+  t.append(span, btn); t.classList.remove("hidden");
+  clearTimeout(undoTimer); undoTimer = setTimeout(() => t.classList.add("hidden"), 30000);
+}
+function importData(e) {
+  if(!requirePermission("edit_plan")) return;
+  const file = e.target.files[0]; e.target.value = "";
+  if(!file) return;
+  const r = new FileReader();
+  r.onload = () => {
+    try {
+      const x = JSON.parse(r.result);
+      if(!Array.isArray(x.employees) || !Array.isArray(x.assignments)) throw 0;
+      if(!confirm("Zaimportować plik „" + file.name + "”?\n\nObecny plan (" + data.assignments.length + " zadań, " + data.employees.length + " osób) zostanie ZASTĄPIONY danymi z pliku (" + x.assignments.length + " zadań, " + x.employees.length + " osób).\nPrzed importem pobierze się kopia obecnego planu, a po nim przez 30 sekund będzie można cofnąć.")) return;
+      downloadBackup("przed_importem"); const prev = clone(data);
+      data = x; forceSave = true; saveCloudData(); renderPeople(); render();
+      offerUndo("Plan zaimportowany z pliku.", prev);
+    } catch(_) { alert("Nieprawidłowy plik JSON."); }
+  };
+  r.readAsText(file);
+}
+function clearData() {
+  if(!profile || profile.role !== "Administrator") return alert("Tylko Administrator może wyczyścić plan.");
+  if(!confirm("Wyczyścić cały plan (" + data.assignments.length + " zadań, " + data.employees.length + " osób)?\n\nPrzed wyczyszczeniem pobierze się kopia, a po nim przez 30 sekund będzie można cofnąć.")) return;
+  downloadBackup("przed_czyszczeniem"); const prev = clone(data);
+  data = Object.assign({}, data, { employees: [], assignments: [], lastModified: "Wyczyszczono" });
+  forceSave = true; saveCloudData(); renderPeople(); render();
+  offerUndo("Plan wyczyszczony.", prev);
+}
+
+// Osoby / pracownicy: zmiana nazwy i usuwanie.
+function chipHtml(name, i) {
+  const ok = can("manage_people");
+  return "<span class='chip'>" + esc(name) + (ok ? "<button class='chip-btn' title='Zmień nazwę' onclick='renamePerson(" + i + ")'>✎</button><button class='chip-btn del' title='Usuń' onclick='deletePerson(" + i + ")'>×</button>" : "") + "</span>";
+}
+function renamePerson(i) {
+  if(!requirePermission("manage_people")) return;
+  const old = data.employees[i]; if(old === undefined) return;
+  if(typeof PL_EMPLOYEE !== "undefined" && old === PL_EMPLOYEE) return alert("Nazwa „" + old + "” jest używana przez synchronizację Packing List i nie można jej zmienić.");
+  if(typeof REMINDER_EMPLOYEES !== "undefined" && REMINDER_EMPLOYEES.includes(old) && !confirm("Nazwa „" + old + "” jest wpisana w kodzie strony (przypomnienia). Po zmianie nazwy przypomnienia dla tej osoby będą działać tylko, jeśli przypiszesz jej konto w panelu „Zarządzaj użytkownikami”. Kontynuować?")) return;
+  const input = prompt("Nowa nazwa dla „" + old + "”:", old); if(input === null) return;
+  const nn = input.trim(); if(!nn || nn === old) return;
+  if(data.employees.some(x => x !== old && x.toLowerCase() === nn.toLowerCase())) return alert("Taka osoba już istnieje.");
+  data.employees[i] = nn; let n = 0;
+  data.assignments.forEach(a => { if(a.employee === old) { a.employee = nn; n++; } });
+  if(data.reminderMap) Object.keys(data.reminderMap).forEach(k => { if(data.reminderMap[k] === old) data.reminderMap[k] = nn; });
+  saveCloudData(); renderPeople(); render();
+  toast("Zmieniono nazwę: „" + old + "” → „" + nn + "”" + (n ? " (" + n + " zadań)" : "") + ".");
+}
+function deletePerson(i) {
+  if(!requirePermission("manage_people")) return;
+  const name = data.employees[i]; if(name === undefined) return;
+  const n = data.assignments.filter(a => a.employee === name).length;
+  if(n && !requirePermission("edit_plan")) return;
+  if(!confirm(n ? "Usunąć „" + name + "” razem z " + n + " zadaniami?" : "Usunąć „" + name + "”?")) return;
+  const prev = clone(data);
+  data.employees.splice(i, 1); data.assignments = data.assignments.filter(a => a.employee !== name);
+  if(data.reminderMap) Object.keys(data.reminderMap).forEach(k => { if(data.reminderMap[k] === name) delete data.reminderMap[k]; });
+  saveCloudData(); renderPeople(); render();
+  offerUndo("Usunięto „" + name + "”" + (n ? " i " + n + " zadań" : "") + ".", prev);
 }
 
 function setup(){
@@ -801,7 +969,7 @@ function addEmployee(){
 function renderPeople(){
   if(!Array.isArray(data.employees)) data.employees = [];
   data.employees.sort((a,b) => a.localeCompare(b,"pl"));
-  el("people").innerHTML = data.employees.map(x => "<span class='chip'>"+esc(x)+"</span>").join("") || "<span class='empty'>Brak pracowników</span>";
+  el("people").innerHTML = data.employees.map((x, i) => chipHtml(x, i)).join("") || "<span class='empty'>Brak pracowników</span>";
   let old = el("employee").value;
   el("employee").innerHTML = data.employees.map(x => "<option>"+esc(x)+"</option>").join("");
   el("employee").value = data.employees.includes(old) ? old : (data.employees[0] || "");
@@ -960,8 +1128,6 @@ function moveTask(id, date, shift) {
 }
 
 function exportData(){let a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:"application/json"}));a.download="plan_produkcji.json";a.click()}
-function importData(e){if(!requirePermission("edit_plan"))return;let r=new FileReader();r.onload=()=>{try{let x=JSON.parse(r.result);if(!Array.isArray(x.employees)||!Array.isArray(x.assignments))throw 0;data=x;saveCloudData();renderPeople();render()}catch(_){alert("Nieprawidłowy plik.")}};if(e.target.files[0])r.readAsText(e.target.files[0])}
-function clearData(){if(!profile||profile.role!=="Administrator")return alert("Tylko Administrator może wyczyścić plan.");if(confirm("Wyczyścić cały plan?")){data={format:"plan-produkcji-html-v1",employees:[],assignments:[],lastModified:"Wyczyszczono"};saveCloudData();renderPeople();render()}}
 
 if(!el("week").value) {
   el("week").value = iso(monday());
